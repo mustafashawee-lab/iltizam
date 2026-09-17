@@ -1,0 +1,1085 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#F7F5EF;color:#1B231E}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style></head><body>
+<title>سجل الالتزام</title>
+<meta name="description" content="متابعة يومية صارمة لخطة خسارة الوزن: وجبات، ماء، مشي، قهوة، مع تقارير يومية وأسبوعية وشهرية، وإعدادات قابلة للتعديل بالكامل.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F7A5C">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="الالتزام">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#F7F5EF;
+    --surface:#FFFFFF;
+    --surface-2:#F0EDE2;
+    --ink:#1B231E;
+    --muted:#767F71;
+    --border:#E4E0D0;
+    --accent:#1F7A5C;
+    --accent-2:#2FA37A;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#DCF0E7;
+    --gold:#B9822C;
+    --gold-soft:#F4E7CC;
+    --danger:#C0453F;
+    --danger-soft:#F6DEDC;
+    --success:#2F9E5B;
+    --success-soft:#DFF3E6;
+    --shadow: 0 1px 2px rgba(27,35,30,.06), 0 10px 28px -14px rgba(27,35,30,.22);
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0E1410;
+      --surface:#161F19;
+      --surface-2:#1D2822;
+      --ink:#ECF1EB;
+      --muted:#93A092;
+      --border:#28352D;
+      --accent:#4FCB9F;
+      --accent-2:#6EDCB4;
+      --accent-ink:#08211A;
+      --accent-soft:#1C3A2F;
+      --gold:#E3AE5C;
+      --gold-soft:#3B2F19;
+      --danger:#E88079;
+      --danger-soft:#3B2320;
+      --success:#63CF8E;
+      --success-soft:#1C3626;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 28px -14px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E1410; --surface:#161F19; --surface-2:#1D2822; --ink:#ECF1EB; --muted:#93A092;
+    --border:#28352D; --accent:#4FCB9F; --accent-2:#6EDCB4; --accent-ink:#08211A; --accent-soft:#1C3A2F;
+    --gold:#E3AE5C; --gold-soft:#3B2F19; --danger:#E88079; --danger-soft:#3B2320; --success:#63CF8E; --success-soft:#1C3626;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 28px -14px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+    direction:rtl; min-height:100vh; display:flex; flex-direction:column;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;direction:ltr;display:inline-block;unicode-bidi:isolate}
+  h1,h2,h3{font-family:"El Messiri",'IBM Plex Sans Arabic',sans-serif;text-wrap:balance;margin:0}
+  button,input,textarea{font-family:inherit}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important;transition-duration:.001ms !important} }
+
+  /* ---------- hero / top ---------- */
+  .hero{
+    position:sticky;top:0;z-index:20;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff; padding:16px 18px 20px; box-shadow:var(--shadow);
+  }
+  .hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .hero-top h1{font-size:1.12rem;font-weight:700;color:#fff}
+  .hero-top .date{font-size:.76rem;color:rgba(255,255,255,.82);margin-top:2px}
+  .streak-chip{
+    display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);
+    border-radius:999px;padding:7px 13px;font-weight:600;font-size:.82rem;white-space:nowrap;color:#fff;
+    backdrop-filter:blur(2px);
+  }
+  .hero-body{display:flex;align-items:center;gap:16px;margin-top:14px}
+  .ring-wrap{position:relative;width:76px;height:76px;flex:none}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.05rem;color:#fff}
+  .hero-stats{flex:1;min-width:0}
+  .hero-stats .line1{font-size:.86rem;color:rgba(255,255,255,.92);font-weight:600}
+  .hero-stats .line2{font-size:.76rem;color:rgba(255,255,255,.78);margin-top:3px}
+  .install-btn{
+    margin-top:12px;width:100%;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.14);
+    color:#fff;border-radius:12px;padding:9px 12px;font-size:.8rem;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .install-btn:active{background:rgba(255,255,255,.22)}
+
+  /* ---------- layout ---------- */
+  main{flex:1;max-width:560px;width:100%;margin:0 auto;padding:16px 16px 96px;}
+  .panel{display:none;flex-direction:column;gap:14px;animation:fade .25s ease}
+  .panel.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+  .card h2{font-size:.98rem;font-weight:600;margin-bottom:10px}
+  .card .eyebrow{font-size:.72rem;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:4px}
+  .row-between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+  /* ---------- weight card ---------- */
+  .weight-row{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .weight-num{font-size:1.9rem;font-weight:600}
+  .weight-num small{font-size:.95rem;color:var(--muted);font-weight:500}
+  .weight-goal{text-align:left;color:var(--muted);font-size:.82rem}
+  .progress-track{height:10px;border-radius:999px;background:var(--surface-2);overflow:hidden;position:relative}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:999px;transition:width .4s ease}
+  .weight-labels{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:6px}
+  .weight-update{display:flex;gap:8px;margin-top:14px}
+  .weight-update input{flex:1;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);color:var(--ink);padding:9px 10px;font-size:.9rem;font-family:inherit;min-width:0}
+  .btn{border:none;border-radius:10px;padding:9px 16px;font-weight:600;font-size:.85rem;background:var(--accent);color:var(--accent-ink);cursor:pointer;white-space:nowrap}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:var(--surface-2);color:var(--ink)}
+  .btn.block{width:100%}
+  .btn.sm{padding:6px 10px;font-size:.78rem}
+  .btn.danger{background:var(--danger-soft);color:var(--danger)}
+
+  /* ---------- checklist ---------- */
+  .check-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)}
+  .check-row:last-child{border-bottom:none}
+  .check-row .icon{font-size:1.25rem;width:28px;text-align:center;flex:none}
+  .check-row .label{flex:1;font-size:.9rem;font-weight:500;min-width:0}
+  .check-row .label .time{display:inline-block;margin-right:6px;color:var(--accent);font-size:.72rem;font-weight:600;background:var(--accent-soft);border-radius:6px;padding:1px 6px}
+  .check-row .label small{display:block;color:var(--muted);font-size:.74rem;font-weight:400;margin-top:2px}
+  .toggle{width:46px;height:27px;border-radius:999px;border:none;background:var(--surface-2);position:relative;cursor:pointer;flex:none;transition:background .2s}
+  .toggle::after{content:"";position:absolute;top:3px;right:3px;width:21px;height:21px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .2s}
+  .toggle.on{background:var(--success)}
+  .toggle.on::after{transform:translateX(-19px)}
+
+  .water-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .cups{display:flex;gap:5px;direction:ltr}
+  .cup{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--muted);transition:background .15s,border-color .15s,color .15s}
+  .cup.filled{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+  .kitchen-banner{border-radius:12px;padding:10px 14px;font-size:.84rem;font-weight:600;display:flex;align-items:center;gap:8px}
+  .kitchen-banner.open{background:var(--success-soft);color:var(--success)}
+  .kitchen-banner.closed{background:var(--danger-soft);color:var(--danger)}
+
+  .coffee-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .coffee-cell{border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;display:flex;flex-direction:column;gap:6px;background:var(--surface-2)}
+  .coffee-cell .t{font-size:.74rem;color:var(--muted);font-weight:600}
+  .coffee-cell .ml{font-size:.72rem;color:var(--muted)}
+  .coffee-cell button{margin:2px auto 0}
+
+  /* ---------- week tab ---------- */
+  .week-grid{display:flex;flex-direction:row;gap:6px;overflow-x:auto;padding-bottom:4px}
+  .week-col{flex:1;min-width:40px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .week-col .wd{font-size:.7rem;color:var(--muted);font-weight:600}
+  .week-col .dd{font-size:.68rem;color:var(--muted)}
+  .week-col.today .wd,.week-col.today .dd{color:var(--accent)}
+  .week-dot{width:20px;height:20px;border-radius:6px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:.62rem}
+  .week-dot.on{background:var(--success);color:#fff}
+  .week-badge{margin-top:2px;font-size:.68rem;font-weight:700;border-radius:999px;padding:2px 7px}
+  .week-badge.full{background:var(--success-soft);color:var(--success)}
+  .week-badge.partial{background:var(--gold-soft);color:var(--gold)}
+  .week-badge.empty{background:var(--surface-2);color:var(--muted)}
+  .legend-row{display:flex;flex-wrap:wrap;gap:10px;font-size:.72rem;color:var(--muted);margin-top:10px}
+  .legend-item{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:12px;height:12px;border-radius:4px}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+  .stat-box{background:var(--surface-2);border-radius:14px;padding:12px;text-align:center}
+  .stat-box .v{font-size:1.25rem;font-weight:700;color:var(--accent)}
+  .stat-box .l{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+  /* ---------- month tab ---------- */
+  .month-nav{display:flex;align-items:center;justify-content:space-between}
+  .month-nav .lbl{font-weight:700;font-size:.95rem}
+  .icon-btn{border:none;background:var(--surface-2);color:var(--ink);border-radius:10px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.95rem}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}
+  .cal-head{font-size:.68rem;color:var(--muted);text-align:center;font-weight:600;padding-bottom:2px}
+  .cal-cell{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.72rem;background:var(--surface-2);color:var(--muted);gap:1px}
+  .cal-cell.blank{background:transparent}
+  .cal-cell.p0{background:var(--surface-2);color:var(--muted)}
+  .cal-cell.p1{background:var(--gold-soft);color:var(--gold)}
+  .cal-cell.p2{background:var(--success-soft);color:var(--success)}
+  .cal-cell.full{background:var(--success);color:#fff;font-weight:700}
+  .cal-cell.today{box-shadow:inset 0 0 0 2px var(--accent)}
+  .cal-cell .frac{font-size:.56rem;opacity:.85}
+
+  /* ---------- settings tab ---------- */
+  .weekday-grid{display:flex;gap:6px;flex-wrap:wrap}
+  .wd-chip{border:1.5px solid var(--border);background:var(--surface-2);color:var(--ink);border-radius:12px;padding:9px 6px;font-size:.74rem;font-weight:600;cursor:pointer;flex:1;min-width:38px;text-align:center;display:flex;flex-direction:column;gap:2px}
+  .wd-chip .tag{font-size:.6rem;font-weight:700}
+  .wd-chip.work{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .wd-chip.holiday{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+  .sched-block{border:1px solid var(--border);border-radius:14px;padding:12px;margin-top:10px}
+  .sched-block h3{font-size:.86rem;margin-bottom:8px}
+  .field-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
+  .field-row label{font-size:.82rem;color:var(--ink);flex:1}
+  .field-row input[type=time],.field-row input[type=number]{border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--ink);padding:6px 8px;font-size:.85rem;width:110px}
+  .list-editor{display:flex;flex-direction:column;gap:8px}
+  .list-row{display:flex;gap:6px;align-items:center}
+  .list-row input[type=text]{flex:1;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--ink);padding:8px 10px;font-size:.84rem;min-width:0}
+  .list-row .rm{border:none;background:var(--danger-soft);color:var(--danger);border-radius:8px;width:30px;height:30px;flex:none;cursor:pointer;font-size:.9rem}
+  textarea.plan-textarea{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--ink);padding:10px;font-size:.85rem;font-family:inherit;min-height:70px;resize:vertical}
+  .snack-row{display:flex;align-items:center;gap:8px}
+  .snack-row .day{width:64px;flex:none;font-size:.78rem;color:var(--muted)}
+  .save-bar{position:sticky;bottom:78px;display:flex;gap:8px;z-index:5}
+  .toast{position:fixed;bottom:100px;inset-inline:0;display:flex;justify-content:center;z-index:60;pointer-events:none}
+  .toast .pill{background:var(--ink);color:var(--bg);border-radius:999px;padding:9px 18px;font-size:.8rem;font-weight:600;opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;box-shadow:var(--shadow)}
+  .toast.show .pill{opacity:1;transform:none}
+  .ios-hint{background:var(--gold-soft);color:var(--gold);border-radius:12px;padding:10px 12px;font-size:.78rem;line-height:1.7;display:flex;gap:8px;align-items:flex-start}
+  .ios-hint button{margin-inline-start:auto;background:none;border:none;color:var(--gold);font-size:.9rem;cursor:pointer;flex:none}
+
+  details.rule-details{border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden}
+  details.rule-details+details.rule-details{margin-top:10px}
+  details.rule-details summary{cursor:pointer;padding:12px 14px;font-weight:600;font-size:.88rem;list-style:none;display:flex;align-items:center;justify-content:space-between}
+  details.rule-details summary::-webkit-details-marker{display:none}
+  details.rule-details summary::after{content:"+";font-size:1.1rem;color:var(--muted)}
+  details.rule-details[open] summary::after{content:"\2212"}
+  .details-body{padding:0 14px 14px;font-size:.85rem;line-height:1.8}
+  .details-body ul{margin:0;padding-inline-start:20px}
+  .tag-pill{display:inline-block;background:var(--danger-soft);color:var(--danger);border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:600;margin-inline-end:4px}
+
+  /* ---------- bottom nav ---------- */
+  nav.tabbar{
+    position:fixed;bottom:0;inset-inline:0;z-index:30;background:var(--surface);border-top:1px solid var(--border);
+    display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    max-width:560px;margin:0 auto;left:0;right:0;
+  }
+  .tab-btn{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:.66rem;padding:6px 8px;border-radius:10px;cursor:pointer;flex:1}
+  .tab-btn .ic{font-size:1.2rem}
+  .tab-btn.active{color:var(--accent);background:var(--accent-soft)}
+
+  .empty-note{font-size:.78rem;color:var(--muted);text-align:center;padding:6px 0}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+</style>
+
+<div class="hero">
+  <div class="hero-top">
+    <div>
+      <h1>سجل الالتزام</h1>
+      <div class="date" id="todayLabel">—</div>
+    </div>
+    <div class="streak-chip">🔥 <span class="mono" id="streakNum">0</span> يوم</div>
+  </div>
+  <div class="hero-body">
+    <div class="ring-wrap">
+      <svg width="76" height="76" viewBox="0 0 76 76">
+        <circle cx="38" cy="38" r="32" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="8"></circle>
+        <circle id="ringProgress" cx="38" cy="38" r="32" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="201"></circle>
+      </svg>
+      <div class="ring-pct" id="ringPct">0%</div>
+    </div>
+    <div class="hero-stats">
+      <div class="line1" id="heroLine1">جاري التحميل…</div>
+      <div class="line2" id="heroLine2">—</div>
+    </div>
+  </div>
+  <button class="install-btn" id="installBtn" hidden>📲 ثبّت التطبيق على شاشتك الرئيسية</button>
+  <div class="ios-hint" id="iosHint" hidden style="margin-top:10px">
+    <span>📲</span>
+    <span>لتثبيت التطبيق: اضغط زر <b>المشاركة</b> بالمتصفح ثم اختر <b>"إضافة إلى الشاشة الرئيسية"</b>.</span>
+    <button id="iosHintClose" aria-label="إغلاق">✕</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ===================== TAB: اليوم ===================== -->
+  <section class="panel active" id="tab-today">
+
+    <div class="card">
+      <div class="eyebrow">تقدّم الوزن</div>
+      <div class="weight-row">
+        <div class="weight-num"><span id="curWeight" class="mono">—</span><small> كغم</small></div>
+        <div class="weight-goal">الهدف <b class="mono" id="goalWeightLbl">—</b> كغم</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="weight-labels">
+        <span>البداية <span class="mono" id="startWeightLbl">—</span></span>
+        <span id="remainingLbl">—</span>
+      </div>
+      <div class="weight-update">
+        <input type="number" step="0.1" inputmode="decimal" id="weightInput" placeholder="وزنك الآن (كغم)">
+        <button class="btn" id="saveWeightBtn">تحديث</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row-between"><h2>قائمة اليوم الستة</h2><span class="mono" id="dayTypeLbl" style="font-size:.72rem;color:var(--muted)">—</span></div>
+      <div id="checklist"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">القهوة اليوم — حليب مسموح <span class="mono" id="milkAmount">—</span></div>
+      <div class="coffee-grid" id="coffeeGrid"></div>
+    </div>
+
+    <div class="kitchen-banner" id="kitchenBanner">—</div>
+
+  </section>
+
+  <!-- ===================== TAB: الأسبوع ===================== -->
+  <section class="panel" id="tab-week">
+    <div class="card">
+      <h2>آخر 7 أيام</h2>
+      <div class="week-grid" id="weekGrid"></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> منجز</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--surface-2)"></span> غير منجز</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ملخص الأسبوع</h2>
+      <div class="stat-grid" id="weekStats"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: الشهر ===================== -->
+  <section class="panel" id="tab-month">
+    <div class="card">
+      <div class="month-nav">
+        <button class="icon-btn" id="monthPrev">‹</button>
+        <div class="lbl" id="monthLabel">—</div>
+        <button class="icon-btn" id="monthNext">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--surface-2)"></span> 0/6</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--gold-soft)"></span> جزئي</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> 6/6</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>ملخص الشهر</h2>
+      <div class="stat-grid" id="monthStats"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: الخطة والإعدادات ===================== -->
+  <section class="panel" id="tab-settings">
+
+    <details class="rule-details" open>
+      <summary>القواعد الثابتة</summary>
+      <div class="details-body">
+        <ul>
+          <li>وجبتان رئيسيتان (إفطار وغداء) + سناك واحد فقط، بدون عشاء.</li>
+          <li>الماء <span class="mono" id="ruleWater">8</span> أكواب يومياً (2 لتر).</li>
+          <li><span class="tag-pill">ممنوع</span> السكر نهائياً، والصوصات والدهون الزائدة.</li>
+          <li><span class="tag-pill">ممنوع</span> الأكل بعد <span class="mono" id="ruleKitchen">—</span>.</li>
+          <li>قهوة بدون سكر — محلي صناعي حبة واحدة فقط عند الحاجة.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="card">
+      <h2>أيام الدوام والعطلة</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 8px">اضغط على اليوم لتبديله بين دوام / عطلة — يحدد هذا أوقات وجباتك تلقائياً.</div>
+      <div class="weekday-grid" id="weekdayGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>أوقات الوجبات</h2>
+      <div class="sched-block">
+        <h3>🗂️ أيام الدوام</h3>
+        <div class="field-row"><label>الإفطار</label><input type="time" id="tWorkBreakfast"></div>
+        <div class="field-row"><label>السناك</label><input type="time" id="tWorkSnack"></div>
+        <div class="field-row"><label>قهوة بعد الدوام</label><input type="time" id="tWorkCoffee"></div>
+        <div class="field-row"><label>الغداء</label><input type="time" id="tWorkLunch"></div>
+      </div>
+      <div class="sched-block">
+        <h3>🌤️ أيام العطلة</h3>
+        <div class="field-row"><label>الإفطار</label><input type="time" id="tHolBreakfast"></div>
+        <div class="field-row"><label>الغداء</label><input type="time" id="tHolLunch"></div>
+        <div class="field-row"><label>السناك</label><input type="time" id="tHolSnack"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>خيارات الإفطار (خارج البيت)</h2>
+      <div class="list-editor" id="breakfastList"></div>
+      <button class="btn ghost sm" id="addBreakfastOpt" style="margin-top:8px">+ إضافة خيار</button>
+    </div>
+
+    <div class="card">
+      <h2>وصف وجبة الغداء</h2>
+      <textarea class="plan-textarea" id="lunchTemplate"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>السناك اليومي (دورة أسبوعية)</h2>
+      <div class="list-editor" id="snackList"></div>
+    </div>
+
+    <div class="card">
+      <h2>جدول تخفيف الحليب بالقهوة</h2>
+      <div class="field-row"><label>الأسبوع 1 (مل)</label><input type="number" min="0" step="5" id="milkW1"></div>
+      <div class="field-row"><label>الأسبوع 2 (مل)</label><input type="number" min="0" step="5" id="milkW2"></div>
+      <div class="field-row"><label>الأسبوع 3 (مل)</label><input type="number" min="0" step="5" id="milkW3"></div>
+      <div class="empty-note" style="text-align:right;padding-top:4px">من الأسبوع 4 فما بعد: قهوة سادة بدون حليب تلقائياً.</div>
+    </div>
+
+    <div class="card">
+      <h2>أهداف أخرى</h2>
+      <div class="field-row"><label>هدف الماء (أكواب)</label><input type="number" min="1" max="16" id="setWaterGoal"></div>
+      <div class="field-row"><label>مدة المشي (دقيقة)</label><input type="number" min="0" max="180" id="setWalkMin"></div>
+      <div class="field-row"><label>إقفال المطبخ</label><input type="time" id="setKitchenClose"></div>
+    </div>
+
+    <div class="card">
+      <h2>بيانات الجسم</h2>
+      <div class="field-row"><label>الطول (سم)</label><input type="number" id="setHeight"></div>
+      <div class="field-row"><label>العمر</label><input type="number" id="setAge"></div>
+      <div class="field-row"><label>وزن البداية (كغم)</label><input type="number" step="0.1" id="setStartWeight"></div>
+      <div class="field-row"><label>الوزن الهدف (كغم)</label><input type="number" step="0.1" id="setGoalWeight"></div>
+      <div class="field-row"><label>السعرات المستهدفة</label><input type="number" id="setKcal"></div>
+      <div class="field-row"><label>البروتين المستهدف (غ)</label><input type="number" id="setProtein"></div>
+    </div>
+
+    <div class="save-bar">
+      <button class="btn block" id="saveSettingsBtn">💾 حفظ كل التغييرات</button>
+      <button class="btn ghost sm" id="resetSettingsBtn" title="استرجاع الإعدادات الافتراضية">🔄</button>
+    </div>
+
+  </section>
+
+</main>
+
+<div class="toast" id="toast"><div class="pill" id="toastPill">تم الحفظ</div></div>
+
+<nav class="tabbar">
+  <button class="tab-btn active" data-tab="tab-today"><span class="ic">✅</span>اليوم</button>
+  <button class="tab-btn" data-tab="tab-week"><span class="ic">📆</span>الأسبوع</button>
+  <button class="tab-btn" data-tab="tab-month"><span class="ic">🗓️</span>الشهر</button>
+  <button class="tab-btn" data-tab="tab-settings"><span class="ic">⚙️</span>الخطة</button>
+</nav>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ======================================================= helpers ===== */
+  var WEEKDAY_AR = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+  var WEEKDAY_SHORT = ["أحد","اثن","ثلا","أرب","خمي","جمع","سبت"];
+  var SNACK_EMOJIS = ["🍎","🌰","🍊","🥤","🥕","🍊","🥤"];
+  var ARABIC_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
+
+  function pad(n){ return n<10 ? "0"+n : ""+n; }
+  function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function startOfDay(d){ var x=new Date(d); x.setHours(0,0,0,0); return x; }
+  function daysBetween(a,b){ return Math.round((startOfDay(b)-startOfDay(a))/86400000); }
+  function formatDateAr(d){ return WEEKDAY_AR[d.getDay()] + "، " + d.getDate() + " " + ARABIC_MONTHS[d.getMonth()]; }
+  function fmtTime12(hhmm){
+    if (!hhmm) return "—";
+    var parts = hhmm.split(":"); var h = parseInt(parts[0],10); var m = parts[1]||"00";
+    var suf = h>=12 ? "م" : "ص";
+    var h12 = h%12; if (h12===0) h12=12;
+    return h12+":"+m+" "+suf;
+  }
+
+  /* ======================================================= storage ====== */
+  var LS_PREFIX = "coachApp_";
+  function lsGet(key){ try { var raw = localStorage.getItem(LS_PREFIX+key); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+  function lsSet(key, val){ try { localStorage.setItem(LS_PREFIX+key, JSON.stringify(val)); } catch(e){} }
+  var usingLocalStore = false;
+
+  /* ======================================================= defaults ===== */
+  var DEFAULT_PROFILE = {heightCm:179, age:33, startWeight:89, currentWeight:89, goalWeight:80,
+                          targetCalories:1850, targetProteinG:145, startDate:"2026-09-05"};
+
+  var DEFAULT_SETTINGS = {
+    workDays:[0,1,2,4], // الأحد، الاثنين، الثلاثاء، الخميس
+    times:{
+      work:{breakfast:"07:00", snack:"12:30", coffee:"14:30", lunch:"17:00"},
+      holiday:{breakfast:"09:30", lunch:"14:00", snack:"18:00"}
+    },
+    breakfastOptions:[
+      "3 بيضات مسلوقة + نصف صمونة + خيار/طماطة",
+      "فول بدون زيت (كوب) + نصف صمونة",
+      "تونة بالماء (علبة كاملة) + نصف صمونة"
+    ],
+    lunchTemplate:"بروتين 200غ (دجاج/لحم قليل الدهن/سمك) + 3 ملاعق طعام رز مكبوسة فقط أو نصف رغيف بدلها + نصف الصحن خضار بدون صوص، ليمون وملعقة زيت زيتون كحد أقصى.",
+    snacks:["تفاحة واحدة","15 حبة لوز","برتقالة واحدة","شيك بروتين (سكوب بالماء)","جزرتان أو خيارتان","حبتان مندرين","شيك بروتين (سكوب بالماء)"],
+    waterGoalCups:8,
+    walkMinutes:45,
+    kitchenClose:"20:30",
+    milkWeeks:[40,30,20]
+  };
+
+  function cloneDefaultSettings(){ return JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); }
+
+  var DAY_DEFAULT = { breakfast:false, lunch:false, walk:false, sleep:false, waterCups:0, snackDone:false, coffeeB:false, coffeeL:false };
+
+  /* ======================================================= state ======== */
+  var todayStr = dateKey(new Date());
+  var db = null;
+  var profile = null;
+  var settings = null;
+  var dayData = Object.assign({}, DAY_DEFAULT);
+  var allDaysMap = {}; // dateKey -> data, populated from db/localStorage
+  var calCursor = new Date(); // month currently shown in month tab
+
+  var els = {};
+  ["todayLabel","streakNum","ringProgress","ringPct","heroLine1","heroLine2","installBtn","iosHint","iosHintClose",
+   "curWeight","goalWeightLbl","startWeightLbl","remainingLbl","progressFill","weightInput","saveWeightBtn",
+   "checklist","dayTypeLbl","milkAmount","coffeeGrid","kitchenBanner",
+   "weekGrid","weekStats","monthPrev","monthNext","monthLabel","calGrid","monthStats",
+   "ruleWater","ruleKitchen","weekdayGrid","tWorkBreakfast","tWorkSnack","tWorkCoffee","tWorkLunch",
+   "tHolBreakfast","tHolLunch","tHolSnack","breakfastList","addBreakfastOpt","lunchTemplate","snackList",
+   "milkW1","milkW2","milkW3","setWaterGoal","setWalkMin","setKitchenClose",
+   "setHeight","setAge","setStartWeight","setGoalWeight","setKcal","setProtein",
+   "saveSettingsBtn","resetSettingsBtn","toast","toastPill"
+  ].forEach(function(id){ els[id] = document.getElementById(id); });
+
+  els.todayLabel.textContent = formatDateAr(new Date());
+
+  function toast(msg){
+    els.toastPill.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(els.toast._t);
+    els.toast._t = setTimeout(function(){ els.toast.classList.remove("show"); }, 1800);
+  }
+
+  /* ======================================================= tabs ========= */
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+      document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+      if (btn.dataset.tab === "tab-week") renderWeek();
+      if (btn.dataset.tab === "tab-month") renderMonth();
+    });
+  });
+
+  /* ======================================================= schedule ===== */
+  function isWorkDay(d){ return settings.workDays.indexOf(d.getDay()) !== -1; }
+  function todaySchedule(){ return isWorkDay(new Date()) ? settings.times.work : settings.times.holiday; }
+  function todaySnackText(){ return settings.snacks[new Date().getDay()] || "—"; }
+  function todaySnackEmoji(){ return SNACK_EMOJIS[new Date().getDay()] || "🍽️"; }
+
+  function milkForToday(){
+    var start = (profile && profile.startDate) ? new Date(profile.startDate) : new Date(DEFAULT_PROFILE.startDate);
+    var diff = daysBetween(start, new Date());
+    var wk = settings.milkWeeks || DEFAULT_SETTINGS.milkWeeks;
+    if (diff < 7) return wk[0]!=null?wk[0]:40;
+    if (diff < 14) return wk[1]!=null?wk[1]:30;
+    if (diff < 21) return wk[2]!=null?wk[2]:20;
+    return 0;
+  }
+  function milkLabel(ml){ return ml>0 ? (ml+" مل") : "سادة"; }
+
+  /* ======================================================= checklist ==== */
+  function buildCheckItems(){
+    var sched = todaySchedule();
+    return [
+      {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast},
+      {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch},
+      {key:"snackDone", icon:todaySnackEmoji(), label:"السناك", time:sched.snack, sub:todaySnackText()},
+      {key:"water", icon:"💧", label:"الماء", sub:"هدفك "+(settings.waterGoalCups||8)+" أكواب"},
+      {key:"walk", icon:"🚶", label:"المشي", sub:(settings.walkMinutes||45)+" دقيقة أو تمارين بديلة"},
+      {key:"sleep", icon:"🌙", label:"نوم مبكر / بدون أكل ليلي"}
+    ];
+  }
+
+  function renderChecklist(){
+    els.checklist.innerHTML = "";
+    var items = buildCheckItems();
+    items.forEach(function(item){
+      var row = document.createElement("div");
+      row.className = "check-row";
+      var timeHtml = item.time ? '<span class="time mono">'+fmtTime12(item.time)+'</span>' : "";
+      if (item.key === "water"){
+        row.innerHTML = '<span class="icon">'+item.icon+'</span><div class="label">'+timeHtml+item.label+(item.sub?'<small>'+item.sub+'</small>':'')+'</div>';
+        var waterRow = document.createElement("div"); waterRow.className = "water-row";
+        var cups = document.createElement("div"); cups.className = "cups";
+        var goal = settings.waterGoalCups || 8;
+        for (var i=1;i<=goal;i++){
+          (function(i){
+            var c = document.createElement("button");
+            c.className = "cup" + (dayData.waterCups>=i ? " filled":"");
+            c.type = "button"; c.textContent = i; c.setAttribute("aria-label","كوب "+i);
+            c.addEventListener("click", function(){
+              var next = dayData.waterCups === i ? i-1 : i;
+              updateDay({waterCups: next});
+            });
+            cups.appendChild(c);
+          })(i);
+        }
+        waterRow.appendChild(cups); row.appendChild(waterRow);
+      } else {
+        var toggle = document.createElement("button");
+        toggle.className = "toggle" + (dayData[item.key] ? " on":"");
+        toggle.type = "button"; toggle.setAttribute("aria-label", item.label);
+        toggle.addEventListener("click", function(){ var patch={}; patch[item.key]=!dayData[item.key]; updateDay(patch); });
+        row.innerHTML = '<span class="icon">'+item.icon+'</span><div class="label">'+timeHtml+item.label+(item.sub?'<small>'+item.sub+'</small>':'')+'</div>';
+        row.appendChild(toggle);
+      }
+      els.checklist.appendChild(row);
+    });
+    els.dayTypeLbl.textContent = isWorkDay(new Date()) ? "يوم دوام" : "يوم عطلة";
+  }
+
+  function buildCoffeeSlots(){
+    var sched = todaySchedule();
+    if (isWorkDay(new Date())){
+      // work days: one coffee break after work, before the (late) lunch
+      return [{key:"coffeeB", label:"القهوة", time:sched.coffee}];
+    }
+    // holiday days: coffee alongside each of the two meals
+    return [
+      {key:"coffeeB", label:"مع الإفطار", time:sched.breakfast},
+      {key:"coffeeL", label:"مع الغداء", time:sched.lunch}
+    ];
+  }
+
+  function renderCoffee(){
+    els.milkAmount.textContent = milkLabel(milkForToday());
+    els.coffeeGrid.innerHTML = "";
+    els.coffeeGrid.style.gridTemplateColumns = isWorkDay(new Date()) ? "1fr" : "1fr 1fr";
+    buildCoffeeSlots().forEach(function(slot){
+      var cell = document.createElement("div");
+      cell.className = "coffee-cell";
+      cell.innerHTML = '<span class="t">'+slot.label+'</span><span class="ml">'+(slot.time?fmtTime12(slot.time):"—")+'</span>';
+      var btn = document.createElement("button");
+      btn.className = "toggle" + (dayData[slot.key] ? " on":"");
+      btn.type = "button"; btn.setAttribute("aria-label", slot.label);
+      btn.addEventListener("click", function(){ var patch={}; patch[slot.key]=!dayData[slot.key]; updateDay(patch); });
+      cell.appendChild(btn);
+      els.coffeeGrid.appendChild(cell);
+    });
+  }
+
+  function renderKitchen(){
+    var now = new Date();
+    var closeParts = (settings.kitchenClose||"20:30").split(":");
+    var closeTime = new Date(); closeTime.setHours(parseInt(closeParts[0],10), parseInt(closeParts[1],10)||0, 0, 0);
+    if (now < closeTime){
+      els.kitchenBanner.className = "kitchen-banner open";
+      els.kitchenBanner.textContent = "🟢 المطبخ مفتوح — يقفل الساعة "+fmtTime12(settings.kitchenClose||"20:30");
+    } else {
+      els.kitchenBanner.className = "kitchen-banner closed";
+      els.kitchenBanner.textContent = "🔒 المطبخ مقفل — ممنوع أي أكل حتى صباح الغد";
+    }
+  }
+  setInterval(renderKitchen, 60000);
+
+  function dayComplete(d){
+    var goal = (settings && settings.waterGoalCups) || 8;
+    return !!(d && d.breakfast && d.lunch && d.snackDone && d.walk && d.sleep && (d.waterCups||0) >= goal);
+  }
+  function dayItemCount(d){
+    if (!d) return 0;
+    var goal = (settings && settings.waterGoalCups) || 8;
+    var n=0;
+    if (d.breakfast) n++; if (d.lunch) n++; if (d.snackDone) n++; if (d.walk) n++; if (d.sleep) n++;
+    if ((d.waterCups||0) >= goal) n++;
+    return n;
+  }
+
+  function renderHeroRing(){
+    var n = dayItemCount(dayData);
+    var pct = Math.round((n/6)*100);
+    var c = 2*Math.PI*32;
+    els.ringProgress.setAttribute("stroke-dasharray", c.toFixed(0));
+    els.ringProgress.setAttribute("stroke-dashoffset", (c*(1-pct/100)).toFixed(0));
+    els.ringPct.textContent = pct+"%";
+    els.heroLine1.textContent = n+" من 6 منجز اليوم";
+    var remain = profile ? Math.max(0,(profile.currentWeight-profile.goalWeight)) : 0;
+    els.heroLine2.textContent = profile ? ("متبقي "+remain.toFixed(1)+" كغم للهدف") : "—";
+  }
+
+  function renderDayUI(){
+    renderChecklist();
+    renderCoffee();
+    renderKitchen();
+    renderHeroRing();
+    els.ruleWater.textContent = settings.waterGoalCups || 8;
+    els.ruleKitchen.textContent = fmtTime12(settings.kitchenClose || "20:30");
+  }
+
+  function dayRef(key){ return db.doc("days/"+key); }
+
+  function updateDay(patch){
+    Object.assign(dayData, patch);
+    allDaysMap[todayStr] = Object.assign({}, allDaysMap[todayStr]||{}, dayData);
+    renderDayUI();
+    if (usingLocalStore){
+      lsSet("day_"+todayStr, dayData);
+      computeStreak();
+      return;
+    }
+    if (!db) return;
+    var ref = dayRef(todayStr);
+    ref.get().then(function(snap){
+      if (snap.exists) return ref.update(patch);
+      return ref.set(Object.assign({}, DAY_DEFAULT, dayData));
+    }).then(computeStreak).catch(function(){});
+  }
+
+  /* ======================================================= streak ======= */
+  function computeStreak(){
+    var streak = 0;
+    var cursor = new Date();
+    if (!dayComplete(allDaysMap[todayStr])) cursor.setDate(cursor.getDate()-1);
+    for (var i=0;i<120;i++){
+      var key = dateKey(cursor);
+      if (dayComplete(allDaysMap[key])){ streak++; cursor.setDate(cursor.getDate()-1); } else break;
+    }
+    els.streakNum.textContent = String(streak);
+  }
+
+  function loadAllDays(cb){
+    if (usingLocalStore){
+      allDaysMap = {};
+      var c = new Date();
+      for (var i=0;i<120;i++){
+        var key = dateKey(c);
+        var d = lsGet("day_"+key);
+        if (d) allDaysMap[key] = d;
+        c.setDate(c.getDate()-1);
+      }
+      allDaysMap[todayStr] = Object.assign({}, allDaysMap[todayStr]||{}, dayData);
+      if (cb) cb();
+      return;
+    }
+    if (!db){ if (cb) cb(); return; }
+    db.collection("days").limit(150).get().then(function(qs){
+      allDaysMap = {};
+      qs.docs.forEach(function(doc){ allDaysMap[doc.id] = doc.data(); });
+      allDaysMap[todayStr] = Object.assign({}, allDaysMap[todayStr]||{}, dayData);
+      if (cb) cb();
+    }).catch(function(){ if (cb) cb(); });
+  }
+
+  /* ======================================================= week tab ===== */
+  function renderWeek(){
+    els.weekGrid.innerHTML = "";
+    var items = [
+      {key:"breakfast", ic:"🍳"}, {key:"lunch", ic:"🍗"}, {key:"snackDone", ic:"🍎"},
+      {key:"water", ic:"💧"}, {key:"walk", ic:"🚶"}, {key:"sleep", ic:"🌙"}
+    ];
+    var days = [];
+    for (var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); days.push(d); }
+    var fullCount=0, waterSum=0, waterN=0, walkCount=0, weights=[];
+    days.forEach(function(d){
+      var key = dateKey(d);
+      var data = allDaysMap[key] || null;
+      var col = document.createElement("div");
+      col.className = "week-col" + (key===todayStr ? " today":"");
+      var wd = document.createElement("div"); wd.className="wd"; wd.textContent = WEEKDAY_SHORT[d.getDay()];
+      var dd = document.createElement("div"); dd.className="dd"; dd.textContent = d.getDate();
+      col.appendChild(wd); col.appendChild(dd);
+      items.forEach(function(it){
+        var on = it.key==="water" ? (data && (data.waterCups||0) >= (settings.waterGoalCups||8)) : !!(data && data[it.key]);
+        var dot = document.createElement("div");
+        dot.className = "week-dot" + (on ? " on":"");
+        dot.textContent = it.ic;
+        col.appendChild(dot);
+      });
+      var n = dayItemCount(data);
+      var badge = document.createElement("div");
+      badge.className = "week-badge " + (n===6?"full":n>0?"partial":"empty");
+      badge.textContent = n+"/6";
+      col.appendChild(badge);
+      els.weekGrid.appendChild(col);
+      if (n===6) fullCount++;
+      if (data && data.waterCups!=null){ waterSum += data.waterCups; waterN++; }
+      if (data && data.walk) walkCount++;
+      if (data && data.weight!=null) weights.push(data.weight);
+    });
+    var weightChange = weights.length>=2 ? (weights[weights.length-1]-weights[0]) : null;
+    els.weekStats.innerHTML =
+      statBox(fullCount+"/7", "أيام كاملة") +
+      statBox((waterN?(waterSum/waterN).toFixed(1):"—"), "متوسط الماء (كوب)") +
+      statBox(walkCount+"/7", "أيام المشي") +
+      statBox(weightChange==null ? "—" : (weightChange>0?"+":"")+weightChange.toFixed(1)+" كغم", "تغيّر الوزن");
+  }
+
+  function statBox(v,l){ return '<div class="stat-box"><div class="v mono">'+v+'</div><div class="l">'+l+'</div></div>'; }
+
+  /* ======================================================= month tab ===== */
+  function renderMonth(){
+    var y = calCursor.getFullYear(), m = calCursor.getMonth();
+    els.monthLabel.textContent = ARABIC_MONTHS[m] + " " + y;
+    els.calGrid.innerHTML = "";
+    WEEKDAY_SHORT.forEach(function(w){
+      var h = document.createElement("div"); h.className="cal-head"; h.textContent=w; els.calGrid.appendChild(h);
+    });
+    var firstDay = new Date(y,m,1);
+    var startOffset = firstDay.getDay();
+    var daysInMonth = new Date(y,m+1,0).getDate();
+    for (var i=0;i<startOffset;i++){
+      var blank = document.createElement("div"); blank.className="cal-cell blank"; els.calGrid.appendChild(blank);
+    }
+    var fullDays=0, elapsedDays=0, waterSum=0, waterN=0, walkCount=0, weights=[];
+    var now = new Date();
+    for (var day=1; day<=daysInMonth; day++){
+      var d = new Date(y,m,day);
+      var key = dateKey(d);
+      var data = allDaysMap[key] || null;
+      var n = dayItemCount(data);
+      var cell = document.createElement("div");
+      var cls = n===6 ? "full" : n>0 ? (n>=4?"p2":"p1") : "p0";
+      cell.className = "cal-cell " + cls + (key===todayStr?" today":"");
+      cell.innerHTML = day + (data ? '<span class="frac">'+n+'/6</span>' : "");
+      els.calGrid.appendChild(cell);
+      if (startOfDay(d) <= startOfDay(now)){
+        elapsedDays++;
+        if (n===6) fullDays++;
+        if (data && data.waterCups!=null){ waterSum+=data.waterCups; waterN++; }
+        if (data && data.walk) walkCount++;
+        if (data && data.weight!=null) weights.push(data.weight);
+      }
+    }
+    var pct = elapsedDays ? Math.round((fullDays/elapsedDays)*100) : 0;
+    els.monthStats.innerHTML =
+      statBox(pct+"%", "نسبة الأيام الكاملة") +
+      statBox((waterN?(waterSum/waterN).toFixed(1):"—"), "متوسط الماء (كوب)") +
+      statBox(walkCount, "أيام المشي") +
+      statBox(weights.length ? weights[0].toFixed(1)+" ← "+weights[weights.length-1].toFixed(1) : "—", "الوزن (أول ← آخر)");
+  }
+  els.monthPrev.addEventListener("click", function(){ calCursor.setMonth(calCursor.getMonth()-1); renderMonth(); });
+  els.monthNext.addEventListener("click", function(){ calCursor.setMonth(calCursor.getMonth()+1); renderMonth(); });
+
+  /* ======================================================= profile ====== */
+  function renderProfile(){
+    if (!profile) return;
+    els.curWeight.textContent = profile.currentWeight;
+    els.goalWeightLbl.textContent = profile.goalWeight;
+    els.startWeightLbl.textContent = profile.startWeight;
+    var total = profile.startWeight - profile.goalWeight;
+    var done = profile.startWeight - profile.currentWeight;
+    var pct = total>0 ? Math.max(0, Math.min(100, (done/total)*100)) : 0;
+    els.progressFill.style.width = pct.toFixed(0)+"%";
+    var remain = (profile.currentWeight - profile.goalWeight);
+    els.remainingLbl.textContent = remain>0 ? ("متبقي "+remain.toFixed(1)+" كغم") : "وصلت للهدف 🎉";
+    renderHeroRing();
+  }
+
+  els.saveWeightBtn.addEventListener("click", function(){
+    var v = parseFloat(els.weightInput.value);
+    if (!v || v<=0) return;
+    updateDay({weight: v}); // log into today's day doc for trend charts
+    if (usingLocalStore){
+      profile = Object.assign({}, profile, {currentWeight: v});
+      lsSet("profile", profile);
+      renderProfile();
+      els.weightInput.value = "";
+      toast("تم تحديث الوزن ✅");
+      return;
+    }
+    if (!db) return;
+    els.saveWeightBtn.disabled = true;
+    db.doc("profile/me").update({currentWeight: v}).then(function(){
+      els.weightInput.value = "";
+      toast("تم تحديث الوزن ✅");
+    }).catch(function(){}).finally(function(){ els.saveWeightBtn.disabled = false; });
+  });
+
+  /* ======================================================= settings UI == */
+  function renderWeekdayGrid(){
+    els.weekdayGrid.innerHTML = "";
+    WEEKDAY_AR.forEach(function(name, idx){
+      var isWork = settings.workDays.indexOf(idx) !== -1;
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "wd-chip " + (isWork ? "work":"holiday");
+      chip.innerHTML = name.replace("ال","") + '<span class="tag">' + (isWork?"دوام":"عطلة") + "</span>";
+      chip.addEventListener("click", function(){
+        var pos = settings.workDays.indexOf(idx);
+        if (pos===-1) settings.workDays.push(idx); else settings.workDays.splice(pos,1);
+        renderWeekdayGrid();
+      });
+      els.weekdayGrid.appendChild(chip);
+    });
+  }
+
+  function renderBreakfastList(){
+    els.breakfastList.innerHTML = "";
+    settings.breakfastOptions.forEach(function(opt, idx){
+      var row = document.createElement("div"); row.className="list-row";
+      var input = document.createElement("input"); input.type="text"; input.value=opt;
+      input.addEventListener("input", function(){ settings.breakfastOptions[idx] = input.value; });
+      var rm = document.createElement("button"); rm.className="rm"; rm.type="button"; rm.textContent="✕";
+      rm.addEventListener("click", function(){ settings.breakfastOptions.splice(idx,1); renderBreakfastList(); });
+      row.appendChild(input); row.appendChild(rm);
+      els.breakfastList.appendChild(row);
+    });
+  }
+  els.addBreakfastOpt.addEventListener("click", function(){
+    settings.breakfastOptions.push("");
+    renderBreakfastList();
+  });
+
+  function renderSnackList(){
+    els.snackList.innerHTML = "";
+    WEEKDAY_AR.forEach(function(name, idx){
+      var row = document.createElement("div"); row.className="snack-row";
+      var day = document.createElement("div"); day.className="day"; day.textContent = SNACK_EMOJIS[idx]+" "+name;
+      var input = document.createElement("input"); input.type="text"; input.value = settings.snacks[idx] || "";
+      input.addEventListener("input", function(){ settings.snacks[idx] = input.value; });
+      row.appendChild(day); row.appendChild(input);
+      els.snackList.appendChild(row);
+    });
+  }
+
+  function fillSettingsForm(){
+    renderWeekdayGrid();
+    els.tWorkBreakfast.value = settings.times.work.breakfast || "";
+    els.tWorkSnack.value = settings.times.work.snack || "";
+    els.tWorkCoffee.value = settings.times.work.coffee || "";
+    els.tWorkLunch.value = settings.times.work.lunch || "";
+    els.tHolBreakfast.value = settings.times.holiday.breakfast || "";
+    els.tHolLunch.value = settings.times.holiday.lunch || "";
+    els.tHolSnack.value = settings.times.holiday.snack || "";
+    renderBreakfastList();
+    els.lunchTemplate.value = settings.lunchTemplate || "";
+    renderSnackList();
+    var wk = settings.milkWeeks || [40,30,20];
+    els.milkW1.value = wk[0]; els.milkW2.value = wk[1]; els.milkW3.value = wk[2];
+    els.setWaterGoal.value = settings.waterGoalCups || 8;
+    els.setWalkMin.value = settings.walkMinutes || 45;
+    els.setKitchenClose.value = settings.kitchenClose || "20:30";
+    if (profile){
+      els.setHeight.value = profile.heightCm || "";
+      els.setAge.value = profile.age || "";
+      els.setStartWeight.value = profile.startWeight || "";
+      els.setGoalWeight.value = profile.goalWeight || "";
+      els.setKcal.value = profile.targetCalories || "";
+      els.setProtein.value = profile.targetProteinG || "";
+    }
+  }
+
+  function collectSettingsFromForm(){
+    settings.times.work.breakfast = els.tWorkBreakfast.value;
+    settings.times.work.snack = els.tWorkSnack.value;
+    settings.times.work.coffee = els.tWorkCoffee.value;
+    settings.times.work.lunch = els.tWorkLunch.value;
+    settings.times.holiday.breakfast = els.tHolBreakfast.value;
+    settings.times.holiday.lunch = els.tHolLunch.value;
+    settings.times.holiday.snack = els.tHolSnack.value;
+    settings.lunchTemplate = els.lunchTemplate.value;
+    settings.milkWeeks = [parseInt(els.milkW1.value,10)||0, parseInt(els.milkW2.value,10)||0, parseInt(els.milkW3.value,10)||0];
+    settings.waterGoalCups = parseInt(els.setWaterGoal.value,10) || 8;
+    settings.walkMinutes = parseInt(els.setWalkMin.value,10) || 45;
+    settings.kitchenClose = els.setKitchenClose.value || "20:30";
+    settings.breakfastOptions = settings.breakfastOptions.filter(function(s){ return s && s.trim(); });
+    return settings;
+  }
+
+  function collectProfileFromForm(){
+    return {
+      heightCm: parseFloat(els.setHeight.value)||profile.heightCm,
+      age: parseInt(els.setAge.value,10)||profile.age,
+      startWeight: parseFloat(els.setStartWeight.value)||profile.startWeight,
+      currentWeight: profile.currentWeight,
+      goalWeight: parseFloat(els.setGoalWeight.value)||profile.goalWeight,
+      targetCalories: parseInt(els.setKcal.value,10)||profile.targetCalories,
+      targetProteinG: parseInt(els.setProtein.value,10)||profile.targetProteinG,
+      startDate: profile.startDate
+    };
+  }
+
+  els.saveSettingsBtn.addEventListener("click", function(){
+    settings = collectSettingsFromForm();
+    var newProfile = collectProfileFromForm();
+    profile = Object.assign({}, profile, newProfile);
+    if (usingLocalStore){
+      lsSet("settings", settings);
+      lsSet("profile", profile);
+      renderDayUI(); renderProfile();
+      toast("تم حفظ كل التغييرات ✅");
+      return;
+    }
+    if (!db) return;
+    els.saveSettingsBtn.disabled = true;
+    Promise.all([
+      db.doc("settings/plan").set(settings),
+      db.doc("profile/me").update(newProfile)
+    ]).then(function(){
+      renderDayUI(); renderProfile();
+      toast("تم حفظ كل التغييرات ✅");
+    }).catch(function(){ toast("تعذّر الحفظ، جرّب ثانية"); })
+      .finally(function(){ els.saveSettingsBtn.disabled = false; });
+  });
+
+  els.resetSettingsBtn.addEventListener("click", function(){
+    if (!confirm("استرجاع كل الإعدادات (الأوقات والوجبات) للوضع الافتراضي؟")) return;
+    settings = cloneDefaultSettings();
+    fillSettingsForm();
+    renderDayUI();
+    toast("تم الاسترجاع — اضغط حفظ لتثبيته");
+  });
+
+  /* ======================================================= PWA install == */
+  var deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    els.installBtn.hidden = false;
+  });
+  els.installBtn.addEventListener("click", function(){
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(function(){ deferredPrompt=null; els.installBtn.hidden = true; });
+  });
+  window.addEventListener("appinstalled", function(){ els.installBtn.hidden = true; });
+
+  (function iosInstallHint(){
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+    var dismissed = lsGet("iosHintDismissed");
+    if (isIOS && !isStandalone && !dismissed) els.iosHint.hidden = false;
+  })();
+  els.iosHintClose.addEventListener("click", function(){ els.iosHint.hidden = true; lsSet("iosHintDismissed", true); });
+
+  if ("serviceWorker" in navigator){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  }
+
+  /* ======================================================= boot ========= */
+  function afterDataReady(){
+    fillSettingsForm();
+    renderProfile();
+    renderDayUI();
+    loadAllDays(computeStreak);
+  }
+
+  function bootLocalStore(){
+    usingLocalStore = true;
+    profile = lsGet("profile") || DEFAULT_PROFILE;
+    settings = lsGet("settings") || cloneDefaultSettings();
+    lsSet("profile", profile);
+    lsSet("settings", settings);
+    dayData = Object.assign({}, DAY_DEFAULT, lsGet("day_"+todayStr) || {});
+    afterDataReady();
+  }
+
+  if (window.claude){
+    window.claude.use("db").then(function(_db){
+      db = _db;
+      if (!db){ bootLocalStore(); return; }
+
+      var gotProfile=false, gotSettings=false, gotDay=false, booted=false;
+      function tryBoot(){ if (!booted && gotProfile && gotSettings && gotDay){ booted = true; afterDataReady(); } }
+
+      db.doc("profile/me").onSnapshot(function(snap){
+        if (snap.exists) profile = snap.data(); else if (!profile) profile = DEFAULT_PROFILE;
+        gotProfile = true;
+        if (booted){ renderProfile(); fillSettingsForm(); }
+        tryBoot();
+      });
+
+      db.doc("settings/plan").onSnapshot(function(snap){
+        if (snap.exists) settings = Object.assign(cloneDefaultSettings(), snap.data());
+        else if (!settings) settings = cloneDefaultSettings();
+        gotSettings = true;
+        if (booted){ fillSettingsForm(); renderDayUI(); }
+        tryBoot();
+      });
+
+      dayRef(todayStr).onSnapshot(function(snap){
+        if (snap.exists) dayData = Object.assign({}, DAY_DEFAULT, snap.data());
+        gotDay = true;
+        if (booted){ renderDayUI(); loadAllDays(computeStreak); }
+        tryBoot();
+      });
+    }).catch(bootLocalStore);
+  } else {
+    bootLocalStore();
+  }
+
+})();
+</script>
+
+</body></html>
