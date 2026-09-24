@@ -235,6 +235,26 @@
   .details-body ul{margin:0;padding-inline-start:20px}
   .tag-pill{display:inline-block;background:var(--danger-soft);color:var(--danger);border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:600;margin-inline-end:4px}
 
+  /* ---------- free foods ---------- */
+  .free-note{font-size:.8rem;color:var(--muted);line-height:1.7;margin-bottom:10px}
+  .free-row{display:flex;flex-wrap:wrap;gap:6px}
+  .free-item{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:7px 12px;font-size:.78rem;font-weight:600}
+
+  /* ---------- meal chooser sheet ---------- */
+  .sheet-wrap{position:fixed;inset:0;z-index:1400;display:flex;align-items:flex-end;justify-content:center}
+  .sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+  .sheet{position:relative;width:100%;max-width:560px;background:var(--surface);border-radius:20px 20px 0 0;
+         padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-height:75vh;overflow-y:auto;box-shadow:var(--shadow)}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .sheet-head b{font-size:1rem;font-family:"El Messiri",sans-serif}
+  .sheet-item{border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;background:var(--surface-2)}
+  .sheet-item:active{background:var(--accent-soft)}
+  .sheet-item .sn{font-size:.9rem;font-weight:600}
+  .sheet-item .sd{font-size:.78rem;color:var(--muted);margin-top:3px;line-height:1.7}
+  .btn.block{width:100%}
+  .check-row .label.pickable{cursor:pointer}
+  .check-row .label.pickable .pick{font-size:.7rem;color:var(--accent);margin-inline-start:6px}
+
   /* ---------- bottom nav ---------- */
   nav.tabbar{
     position:fixed;bottom:0;inset-inline:0;z-index:1200;background:var(--surface);border-top:1px solid var(--border);
@@ -429,6 +449,12 @@
     <div class="card">
       <div class="eyebrow">القهوة اليوم — حليب مسموح <span class="mono" id="milkAmount">—</span></div>
       <div class="coffee-grid" id="coffeeGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="eyebrow">مسموح بين الوجبات — بلا حساب</div>
+      <div class="free-note">إذا جاك جوع بين الوجبات أو قبل إقفال المطبخ، هذي مسموحة ولا تكسر خطتك:</div>
+      <div class="free-row" id="freeRow"></div>
     </div>
 
     <div class="kitchen-banner" id="kitchenBanner">—</div>
@@ -645,12 +671,14 @@
         <div class="field-row"><label>السناك</label><input type="time" id="tWorkSnack"></div>
         <div class="field-row"><label>قهوة بعد الدوام</label><input type="time" id="tWorkCoffee"></div>
         <div class="field-row"><label>الغداء</label><input type="time" id="tWorkLunch"></div>
+        <div class="field-row"><label>الوجبة الثانية</label><input type="time" id="tWorkLunch2"></div>
       </div>
       <div class="sched-block">
         <h3>🌤️ أيام العطلة</h3>
         <div class="field-row"><label>الإفطار</label><input type="time" id="tHolBreakfast"></div>
         <div class="field-row"><label>الغداء</label><input type="time" id="tHolLunch"></div>
         <div class="field-row"><label>السناك</label><input type="time" id="tHolSnack"></div>
+        <div class="field-row"><label>الوجبة الثانية</label><input type="time" id="tHolLunch2"></div>
       </div>
     </div>
 
@@ -723,6 +751,15 @@
 
 <div class="toast" id="toast"><div class="pill" id="toastPill">تم الحفظ</div></div>
 
+<div class="sheet-wrap" id="mealSheet" hidden>
+  <div class="sheet-bg" id="mealSheetBg"></div>
+  <div class="sheet">
+    <div class="sheet-head"><b id="mealSheetTitle">اختر وجبتك</b><button class="icon-btn" id="mealSheetClose">✕</button></div>
+    <div id="mealSheetList"></div>
+    <button class="btn ghost block" id="mealSheetSkip" style="margin-top:10px">علّمها منجزة بدون تحديد</button>
+  </div>
+</div>
+
 <nav class="tabbar">
   <button class="tab-btn active" data-tab="tab-today"><span class="ic">✅</span>اليوم</button>
   <button class="tab-btn" data-tab="tab-walk"><span class="ic">🚶</span>المشي</button>
@@ -766,8 +803,8 @@
   var DEFAULT_SETTINGS = {
     workDays:[0,1,2,4], // الأحد، الاثنين، الثلاثاء، الخميس
     times:{
-      work:{breakfast:"07:00", snack:"12:30", coffee:"14:30", lunch:"17:00"},
-      holiday:{breakfast:"09:30", lunch:"14:00", snack:"18:00"}
+      work:{breakfast:"07:00", coffee:"14:30", lunch:"15:00", lunch2:"19:00", snack:"18:30"},
+      holiday:{breakfast:"09:30", lunch:"14:00", lunch2:"19:30", snack:"18:00"}
     },
     meals:{
       breakfast:[
@@ -788,6 +825,7 @@
         {n:"حبتان مندرين", d:"94 سعرة"}
       ]
     },
+    v:2,
     waterGoalCups:8,
     walkMinutes:45,
     kitchenClose:"20:30",
@@ -799,7 +837,7 @@
   // ترقية الإعدادات القديمة (خيارات إفطار نصية + وصف غداء + سناك أسبوعي) للشكل الموحّد
   function migrateSettings(st){
     if (!st) return cloneDefaultSettings();
-    if (st.meals && st.meals.breakfast) return st;
+    if (st.meals && st.meals.breakfast) return upgradeTimes(st);
     var m = { breakfast: [], lunch: [], snack: [] };
 
     (st.breakfastOptions || []).forEach(function(x){
@@ -824,6 +862,21 @@
       snack:     m.snack.length     ? m.snack     : def.meals.snack
     };
     delete st.breakfastOptions; delete st.lunchTemplate; delete st.snacks;
+    return upgradeTimes(st);
+  }
+
+  // ترقية لمرة واحدة: السناك للمساء + إضافة الوجبة الثانية
+  function upgradeTimes(st){
+    if (!st) return st;
+    st.times = st.times || cloneDefaultSettings().times;
+    st.times.work = st.times.work || {};
+    st.times.holiday = st.times.holiday || {};
+    if (!st.v || st.v < 2){
+      if (st.times.work.snack === "12:30" || !st.times.work.snack) st.times.work.snack = "18:30";
+      if (!st.times.work.lunch2) st.times.work.lunch2 = "19:00";
+      if (!st.times.holiday.lunch2) st.times.holiday.lunch2 = "19:30";
+      st.v = 2;
+    }
     return st;
   }
 
@@ -841,7 +894,8 @@
   var els = {};
   ["todayLabel","streakNum","ringProgress","ringPct","heroLine1","heroLine2","installBtn","iosHint","iosHintClose",
    "curWeight","goalWeightLbl","startWeightLbl","remainingLbl","progressFill","weightInput","saveWeightBtn",
-   "checklist","dayTypeLbl","milkAmount","coffeeGrid","kitchenBanner",
+   "checklist","dayTypeLbl","milkAmount","coffeeGrid","kitchenBanner","freeRow",
+   "mealSheet","mealSheetBg","mealSheetTitle","mealSheetList","mealSheetClose","mealSheetSkip",
    "weekGrid","weekStats","badgeRow","badgeNote","monthPrev","monthNext","monthLabel","calGrid","monthStats",
    "weightChartWrap","weightStats","exportBtn","importBtn","importFile","backupNote",
    "walkKm","walkTime","walkKcal","walkPace","walkToggle","walkStatus","walkMap","walkStats","walkList","manualWalkBtn","recenterBtn",
@@ -849,7 +903,7 @@
    "shotBtn","shotInput","shotPreviewWrap","shotPreview","shotAskBtn","shotSaveBtn","shotNote","shotGallery",
    "foodSearch","foodChips","foodResults","calcKm","calcWalkOut","calcWaterOut","calcBmiOut","calcTdeeOut","askInput","askBtn",
    "ruleWater","ruleKitchen","weekdayGrid","tWorkBreakfast","tWorkSnack","tWorkCoffee","tWorkLunch",
-   "tHolBreakfast","tHolLunch","tHolSnack","mealsBreakfast","mealsLunch","mealsSnack",
+   "tWorkLunch2","tHolBreakfast","tHolLunch","tHolSnack","tHolLunch2","mealsBreakfast","mealsLunch","mealsSnack",
    "milkW1","milkW2","milkW3","setWaterGoal","setWalkMin","setKitchenClose",
    "setHeight","setAge","setSex","setStartWeight","setGoalWeight","setKcal","setProtein",
    "saveSettingsBtn","resetSettingsBtn","toast","toastPill"
@@ -880,6 +934,16 @@
   /* ======================================================= schedule ===== */
   function isWorkDay(d){ return settings.workDays.indexOf(d.getDay()) !== -1; }
   function todaySchedule(){ return isWorkDay(new Date()) ? settings.times.work : settings.times.holiday; }
+  var FREE_FOODS = [
+    "🥒 خيار", "🥬 خس", "🍅 طماطة", "🥕 جزر", "🌶️ فلفل أخضر", "🧅 فجل",
+    "🍲 شوربة صافية بدون دهن", "☕ قهوة سادة", "🍵 شاي بدون سكر", "💧 ماء بالليمون والنعناع"
+  ];
+
+  function renderFreeRow(){
+    if (!els.freeRow) return;
+    els.freeRow.innerHTML = FREE_FOODS.map(function(f){ return '<span class="free-item">'+f+'</span>'; }).join("");
+  }
+
   function mealHint(type){
     var list = (settings.meals && settings.meals[type]) || [];
     if (!list.length) return null;
@@ -904,6 +968,7 @@
     return [
       {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast, sub:chosen.breakfast || mealHint("breakfast")},
       {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch, sub:chosen.lunch || mealHint("lunch")},
+      {key:"lunch2", icon:"🥚", label:"الوجبة الثانية", time:sched.lunch2, sub:"بروتين خفيف — بيضتان أو 60غ دجاج أو علبة تونة (اختيارية)", optional:true},
       {key:"snackDone", icon:"🍎", label:"السناك", time:sched.snack, sub:chosen.snack || mealHint("snack")},
       {key:"water", icon:"💧", label:"الماء", sub:"هدفك "+(settings.waterGoalCups||8)+" أكواب"},
       {key:"walk", icon:"🚶", label:"المشي", sub:(settings.walkMinutes||45)+" دقيقة أو تمارين بديلة"},
@@ -941,7 +1006,14 @@
         toggle.className = "toggle" + (dayData[item.key] ? " on":"");
         toggle.type = "button"; toggle.setAttribute("aria-label", item.label);
         toggle.addEventListener("click", function(){ var patch={}; patch[item.key]=!dayData[item.key]; updateDay(patch); });
-        row.innerHTML = '<span class="icon">'+item.icon+'</span><div class="label">'+timeHtml+item.label+(item.sub?'<small>'+item.sub+'</small>':'')+'</div>';
+        var pickable = (item.key === "breakfast" || item.key === "lunch" || item.key === "snackDone");
+        var pickType = item.key === "snackDone" ? "snack" : item.key;
+        row.innerHTML = '<span class="icon">'+item.icon+'</span><div class="label'+(pickable?" pickable":"")+'">' +
+          timeHtml + item.label + (pickable ? '<span class="pick">▾ اختر</span>' : '') +
+          (item.sub?'<small>'+item.sub+'</small>':'') + '</div>';
+        if (pickable){
+          row.querySelector(".label").addEventListener("click", function(){ openMealSheet(pickType); });
+        }
         row.appendChild(toggle);
       }
       els.checklist.appendChild(row);
@@ -961,6 +1033,44 @@
       {key:"coffeeL", label:"مع الغداء", time:sched.lunch}
     ];
   }
+
+  var sheetType = "breakfast";
+
+  function openMealSheet(type){
+    sheetType = type;
+    els.mealSheetTitle.textContent = "اختر " + MEAL_LABEL[type];
+    var list = (settings.meals && settings.meals[type]) || [];
+    els.mealSheetList.innerHTML = list.length
+      ? list.map(function(m, i){
+          return '<div class="sheet-item" data-pick="'+i+'"><div class="sn">'+(m.n||"—")+'</div>' +
+                 (m.d ? '<div class="sd">'+m.d+'</div>' : '') + '</div>';
+        }).join("")
+      : '<div class="empty-note">ماكو وجبات محفوظة — ضيفها من تبويب الخطة أو من الوصفات.</div>';
+    els.mealSheetList.querySelectorAll("[data-pick]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var m = list[+el.dataset.pick];
+        var meals = Object.assign({}, dayData.meals || {});
+        meals[type] = m.n;
+        var patch = { meals: meals };
+        patch[type === "snack" ? "snackDone" : type] = true;
+        updateDay(patch);
+        closeMealSheet();
+        toast("انسجلت: " + m.n + " ✅");
+      });
+    });
+    els.mealSheet.hidden = false;
+  }
+
+  function closeMealSheet(){ els.mealSheet.hidden = true; }
+
+  els.mealSheetClose.addEventListener("click", closeMealSheet);
+  els.mealSheetBg.addEventListener("click", closeMealSheet);
+  els.mealSheetSkip.addEventListener("click", function(){
+    var patch = {};
+    patch[sheetType === "snack" ? "snackDone" : sheetType] = true;
+    updateDay(patch);
+    closeMealSheet();
+  });
 
   function renderCoffee(){
     els.milkAmount.textContent = milkLabel(milkForToday());
@@ -984,8 +1094,15 @@
     var closeParts = (settings.kitchenClose||"20:30").split(":");
     var closeTime = new Date(); closeTime.setHours(parseInt(closeParts[0],10), parseInt(closeParts[1],10)||0, 0, 0);
     if (now < closeTime){
+      var leftMin = Math.round((closeTime - now) / 60000);
       els.kitchenBanner.className = "kitchen-banner open";
-      els.kitchenBanner.textContent = "🟢 المطبخ مفتوح — يقفل الساعة "+fmtTime12(settings.kitchenClose||"20:30");
+      if (leftMin <= 60){
+        els.kitchenBanner.textContent = "⏳ باقي " + leftMin + " دقيقة على إقفال المطبخ — إذا جاك جوع خذ من قائمة المسموح";
+      } else if (leftMin <= 120){
+        els.kitchenBanner.textContent = "🟢 المطبخ مفتوح — باقي " + Math.floor(leftMin/60) + " ساعة و" + (leftMin%60) + " دقيقة";
+      } else {
+        els.kitchenBanner.textContent = "🟢 المطبخ مفتوح — يقفل الساعة " + fmtTime12(settings.kitchenClose||"20:30");
+      }
     } else {
       els.kitchenBanner.className = "kitchen-banner closed";
       els.kitchenBanner.textContent = "🔒 المطبخ مقفل — ممنوع أي أكل حتى صباح الغد";
@@ -1020,6 +1137,7 @@
 
   function renderDayUI(){
     renderChecklist();
+    renderFreeRow();
     renderCoffee();
     renderKitchen();
     renderHeroRing();
@@ -1446,9 +1564,11 @@
     els.tWorkSnack.value = settings.times.work.snack || "";
     els.tWorkCoffee.value = settings.times.work.coffee || "";
     els.tWorkLunch.value = settings.times.work.lunch || "";
+    els.tWorkLunch2.value = settings.times.work.lunch2 || "";
     els.tHolBreakfast.value = settings.times.holiday.breakfast || "";
     els.tHolLunch.value = settings.times.holiday.lunch || "";
     els.tHolSnack.value = settings.times.holiday.snack || "";
+    els.tHolLunch2.value = settings.times.holiday.lunch2 || "";
     renderAllMealEditors();
     var wk = settings.milkWeeks || [40,30,20];
     els.milkW1.value = wk[0]; els.milkW2.value = wk[1]; els.milkW3.value = wk[2];
@@ -1471,9 +1591,11 @@
     settings.times.work.snack = els.tWorkSnack.value;
     settings.times.work.coffee = els.tWorkCoffee.value;
     settings.times.work.lunch = els.tWorkLunch.value;
+    settings.times.work.lunch2 = els.tWorkLunch2.value;
     settings.times.holiday.breakfast = els.tHolBreakfast.value;
     settings.times.holiday.lunch = els.tHolLunch.value;
     settings.times.holiday.snack = els.tHolSnack.value;
+    settings.times.holiday.lunch2 = els.tHolLunch2.value;
 
     settings.milkWeeks = [parseInt(els.milkW1.value,10)||0, parseInt(els.milkW2.value,10)||0, parseInt(els.milkW3.value,10)||0];
     settings.waterGoalCups = parseInt(els.setWaterGoal.value,10) || 8;
@@ -2066,6 +2188,10 @@
     {k:["سمبوسه","سمبوسة"], f:"سمبوسة (حبة)"},
     {k:["لحم بعجين"], f:"لحم بعجين (حبة)"},
     {k:["شوربه","شوربة"], f:"شوربة دجاج صافية (كوب)"},
+    {k:["شاي","چاي"], f:"شاي بدون سكر"},
+    {k:["قهوه","قهوة"], f:"قهوة سادة"},
+    {k:["خس"], f:"سلطة خضراء بدون صوص"},
+    {k:["جزر","جزره","جزرة"], f:"جزرتان أو خيارتان"},
     {k:["ملوخيه","ملوخية"], f:"ملوخية (كوب)"},
     {k:["فاصوليا"], f:"فاصوليا بالمرق (كوب)"},
     {k:["برغل"], f:"برغل (كوب)"},
@@ -2154,7 +2280,17 @@
     return { items: found, flags: flags };
   }
 
+  var FREE_NAMES = ["سلطة خضراء بدون صوص","خيار (حبة)","طماطة (حبة)","شاي بدون سكر","قهوة سادة","شوربة دجاج صافية (كوب)","باذنجان مشوي (كوب)"];
+  function isFreeFood(food){ return FREE_NAMES.indexOf(food.n) !== -1; }
+
+  // يقترح من وجباتك المحفوظة أولاً، وإذا ماكو يرجع للوصفات
   function bestAlternative(type){
+    var mine = (settings.meals && settings.meals[type]) || [];
+    var valid = mine.filter(function(m){ return (m.n||"").trim(); });
+    if (valid.length){
+      var pick = valid[Math.floor(Math.random()*valid.length)];
+      return { n: pick.n, c: null, m: null, d: pick.d || "", mine: true };
+    }
     var pool = RECIPES.filter(function(r){ return r.t === type; });
     if (!pool.length) return null;
     return pool[Math.floor(Math.random()*pool.length)];
@@ -2168,7 +2304,9 @@
     var budget = mealBudget(judgeType);
     var kcal = 0, prot = 0, banned = [], limited = [];
 
+    var freeCount = 0;
     parsed.items.forEach(function(it){
+      if (isFreeFood(it.food)){ freeCount++; return; }   // الخضار والمشروبات الحرة ما تنحسب
       kcal += it.food.c * it.qty;
       prot += it.food.p * it.qty;
       if (it.food.v === "no") banned.push(it);
@@ -2216,6 +2354,7 @@
 
     var recognized = parsed.items.map(function(it){
       var q = it.qty === 1 ? "" : "<span class=\"mono\">×"+it.qty+"</span> ";
+      if (isFreeFood(it.food)) return "<li>"+q+it.food.n+" — <b>حرّة، ما تنحسب</b></li>";
       return "<li>"+q+it.food.n+" — <span class=\"mono\">"+Math.round(it.food.c*it.qty)+"</span> سعرة</li>";
     }).join("");
 
@@ -2225,7 +2364,8 @@
       '<div class="jline">الإجمالي: <b class="mono">'+kcal+'</b> سعرة · بروتين <b class="mono">'+prot+'</b> غ · ميزانية '+MEAL_LABEL[judgeType]+' <span class="mono">'+budget+'</span> سعرة</div>' +
       (recognized ? '<div class="jline"><b>تعرّفت على:</b><ul>'+recognized+'</ul></div>' : '') +
       (fixes.length ? '<div class="jline"><b>'+(verdict==="no"?"سبب الرفض:":"التعديل المطلوب:")+'</b><ul><li>'+fixes.join("</li><li>")+'</li></ul></div>' : '') +
-      (verdict === "no" && alt ? '<div class="jline"><b>بديل جاهز:</b> '+alt.n+' — <span class="mono">'+alt.c+'</span> سعرة، '+alt.m+' دقيقة تحضير.</div>' : '') +
+      (verdict === "no" && alt ? '<div class="jline"><b>بديل جاهز' + (alt.mine ? " من وجباتك" : "") + ':</b> ' + alt.n +
+        (alt.mine ? (alt.d ? ' — ' + alt.d : '') : ' — <span class="mono">'+alt.c+'</span> سعرة، '+alt.m+' دقيقة تحضير') + '.</div>' : '') +
       '</div>';
 
     if (verdict !== "no"){
