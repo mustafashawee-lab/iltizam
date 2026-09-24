@@ -697,6 +697,13 @@
     </div>
 
     <div class="card">
+      <h2>🥚 وجبات الوجبة الثانية</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">بروتين خفيف بدون نشويات — اختيارية، ما تدخل بحساب الستة.</div>
+      <div class="meal-editor" id="mealsLunch2"></div>
+      <button class="btn ghost sm" data-addmeal="lunch2" style="margin-top:8px">+ إضافة وجبة</button>
+    </div>
+
+    <div class="card">
       <h2>🍎 وجبات السناك</h2>
       <div class="empty-note" style="text-align:right;padding:0 0 10px">اسم الأكلة وتفاصيلها — تختار منها يومياً.</div>
       <div class="meal-editor" id="mealsSnack"></div>
@@ -816,6 +823,13 @@
         {n:"بروتين مشوي مع رز", d:"200غ دجاج أو لحم قليل الدهن أو سمك + 3 ملاعق رز مكبوسة + نصف الصحن خضار بدون صوص"},
         {n:"بروتين مع نصف رغيف", d:"200غ بروتين + نصف رغيف بدل الرز + سلطة، ليمون وملعقة زيت زيتون كحد أقصى"}
       ],
+      lunch2:[
+        {n:"بيضتان مسلوقتان", d:"156 سعرة · 12 غ بروتين — اسلقهم من الصبح وخلّيهم بالثلاجة"},
+        {n:"60غ دجاج بارد", d:"100 سعرة · 19 غ بروتين — من غداء اليوم نفسه"},
+        {n:"علبة تونة صغيرة بالماء", d:"110 سعرة · 25 غ بروتين — بدون خبز"},
+        {n:"شيك بروتين بالماء", d:"120 سعرة · 24 غ بروتين — الأسرع"},
+        {n:"شريحة جبن أبيض مع خيار", d:"96 سعرة · 6 غ بروتين"}
+      ],
       snack:[
         {n:"تفاحة واحدة", d:"95 سعرة — جاهزة بدون تحضير"},
         {n:"15 حبة لوز", d:"105 سعرة — عدّها قبل، لا تاكل من الكيس"},
@@ -825,7 +839,7 @@
         {n:"حبتان مندرين", d:"94 سعرة"}
       ]
     },
-    v:2,
+    v:3,
     waterGoalCups:8,
     walkMinutes:45,
     kitchenClose:"20:30",
@@ -877,6 +891,13 @@
       if (!st.times.holiday.lunch2) st.times.holiday.lunch2 = "19:30";
       st.v = 2;
     }
+    if (st.v < 3){
+      st.meals = st.meals || {};
+      if (!st.meals.lunch2 || !st.meals.lunch2.length){
+        st.meals.lunch2 = cloneDefaultSettings().meals.lunch2;
+      }
+      st.v = 3;
+    }
     return st;
   }
 
@@ -903,7 +924,7 @@
    "shotBtn","shotInput","shotPreviewWrap","shotPreview","shotAskBtn","shotSaveBtn","shotNote","shotGallery",
    "foodSearch","foodChips","foodResults","calcKm","calcWalkOut","calcWaterOut","calcBmiOut","calcTdeeOut","askInput","askBtn",
    "ruleWater","ruleKitchen","weekdayGrid","tWorkBreakfast","tWorkSnack","tWorkCoffee","tWorkLunch",
-   "tWorkLunch2","tHolBreakfast","tHolLunch","tHolSnack","tHolLunch2","mealsBreakfast","mealsLunch","mealsSnack",
+   "tWorkLunch2","tHolBreakfast","tHolLunch","tHolSnack","tHolLunch2","mealsBreakfast","mealsLunch","mealsLunch2","mealsSnack",
    "milkW1","milkW2","milkW3","setWaterGoal","setWalkMin","setKitchenClose",
    "setHeight","setAge","setSex","setStartWeight","setGoalWeight","setKcal","setProtein",
    "saveSettingsBtn","resetSettingsBtn","toast","toastPill"
@@ -968,7 +989,7 @@
     return [
       {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast, sub:chosen.breakfast || mealHint("breakfast")},
       {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch, sub:chosen.lunch || mealHint("lunch")},
-      {key:"lunch2", icon:"🥚", label:"الوجبة الثانية", time:sched.lunch2, sub:"بروتين خفيف — بيضتان أو 60غ دجاج أو علبة تونة (اختيارية)", optional:true},
+      {key:"lunch2", icon:"🥚", label:"الوجبة الثانية", time:sched.lunch2, sub:chosen.lunch2 || mealHint("lunch2"), optional:true},
       {key:"snackDone", icon:"🍎", label:"السناك", time:sched.snack, sub:chosen.snack || mealHint("snack")},
       {key:"water", icon:"💧", label:"الماء", sub:"هدفك "+(settings.waterGoalCups||8)+" أكواب"},
       {key:"walk", icon:"🚶", label:"المشي", sub:(settings.walkMinutes||45)+" دقيقة أو تمارين بديلة"},
@@ -1006,7 +1027,7 @@
         toggle.className = "toggle" + (dayData[item.key] ? " on":"");
         toggle.type = "button"; toggle.setAttribute("aria-label", item.label);
         toggle.addEventListener("click", function(){ var patch={}; patch[item.key]=!dayData[item.key]; updateDay(patch); });
-        var pickable = (item.key === "breakfast" || item.key === "lunch" || item.key === "snackDone");
+        var pickable = (item.key === "breakfast" || item.key === "lunch" || item.key === "lunch2" || item.key === "snackDone");
         var pickType = item.key === "snackDone" ? "snack" : item.key;
         row.innerHTML = '<span class="icon">'+item.icon+'</span><div class="label'+(pickable?" pickable":"")+'">' +
           timeHtml + item.label + (pickable ? '<span class="pick">▾ اختر</span>' : '') +
@@ -1508,10 +1529,10 @@
     });
   }
 
-  var MEAL_BOX = { breakfast:"mealsBreakfast", lunch:"mealsLunch", snack:"mealsSnack" };
+  var MEAL_BOX = { breakfast:"mealsBreakfast", lunch:"mealsLunch", lunch2:"mealsLunch2", snack:"mealsSnack" };
 
   function mealList(type){
-    settings.meals = settings.meals || {breakfast:[],lunch:[],snack:[]};
+    settings.meals = settings.meals || {breakfast:[],lunch:[],lunch2:[],snack:[]};
     settings.meals[type] = settings.meals[type] || [];
     return settings.meals[type];
   }
@@ -1549,7 +1570,7 @@
     });
   }
 
-  function renderAllMealEditors(){ ["breakfast","lunch","snack"].forEach(renderMealEditor); }
+  function renderAllMealEditors(){ ["breakfast","lunch","lunch2","snack"].forEach(renderMealEditor); }
 
   document.querySelectorAll("[data-addmeal]").forEach(function(b){
     b.addEventListener("click", function(){
@@ -1601,7 +1622,7 @@
     settings.waterGoalCups = parseInt(els.setWaterGoal.value,10) || 8;
     settings.walkMinutes = parseInt(els.setWalkMin.value,10) || 45;
     settings.kitchenClose = els.setKitchenClose.value || "20:30";
-    ["breakfast","lunch","snack"].forEach(function(t){
+    ["breakfast","lunch","lunch2","snack"].forEach(function(t){
       settings.meals[t] = mealList(t).filter(function(x){ return x && (x.n||"").trim(); });
     });
     return settings;
@@ -2030,6 +2051,28 @@
      s:"اشوِ الباذنجان بالفرن، افرغه، احشيه بالدجاج المطبوخ مع البصل والطماطة، وارجعه للفرن 10 دقائق.",
      tip:"بديل ممتاز عن المقلوبة بثلث السعرات."},
 
+    // ---------------- الوجبة الثانية ----------------
+    {t:"lunch2", n:"بيضتان مسلوقتان مع خيار", c:172, p:13, m:10,
+     i:["بيضتان مسلوقتان","خيارة","ملح وفلفل أسود"],
+     s:"اسلق 6 بيضات مرة وحدة بالأسبوع وخلّيهم بالثلاجة جاهزين.",
+     tip:"أرخص بروتين وأسرعه — يكسر جوع المساء بدون نشويات."},
+    {t:"lunch2", n:"دجاج بارد من الغداء", c:100, p:19, m:2,
+     i:["60 غ صدر دجاج مشوي","ليمون ورشة سماق"],
+     s:"اشوِ كمية زايدة بالغداء وارفع 60 غ للمساء.",
+     tip:"أعلى بروتين بأقل سعرات — الخيار الأمثل."},
+    {t:"lunch2", n:"تونة بالماء بدون خبز", c:110, p:25, m:3,
+     i:["علبة تونة صغيرة بالماء","ليمون","خس أو خيار"],
+     s:"صفّي التونة وكُلها مع الخضار — بدون صمونة بالمساء.",
+     tip:"لا تضيف مايونيز ولا زيت."},
+    {t:"lunch2", n:"شيك بروتين", c:120, p:24, m:2,
+     i:["سكوب بروتين","ماء بارد","ثلج"],
+     s:"رجّه بالشيكر.",
+     tip:"ممتاز إذا رجعت متأخر وما عندك وقت."},
+    {t:"lunch2", n:"جبن أبيض مع خيار", c:96, p:6, m:2,
+     i:["شريحة جبن أبيض 30غ","خيارة","نعناع"],
+     s:"جاهز بدون تحضير.",
+     tip:"خفيف، بس بروتينه أقل — خلّيه للأيام اللي ما تحس جوع قوي."},
+
     // ---------------- سناك ----------------
     {t:"snack", n:"تفاحة مع لوز", c:165, p:3, m:1,
      i:["تفاحة واحدة","10 حبات لوز"],
@@ -2065,12 +2108,12 @@
      tip:"خفيف وحلو — يقتل الرغبة بالحلويات."}
   ];
 
-  var MEAL_LABEL = {breakfast:"الإفطار", lunch:"الغداء", snack:"السناك"};
+  var MEAL_LABEL = {breakfast:"الإفطار", lunch:"الغداء", lunch2:"الوجبة الثانية", snack:"السناك"};
   var recipeFilter = "breakfast";
 
   function mealBudget(type){
     var target = (profile && profile.targetCalories) || 1850;
-    var frac = type === "breakfast" ? 0.25 : type === "lunch" ? 0.40 : 0.10;
+    var frac = type === "breakfast" ? 0.25 : type === "lunch" ? 0.40 : type === "lunch2" ? 0.12 : 0.10;
     return Math.round(target * frac);
   }
 
@@ -2080,7 +2123,7 @@
   }
 
   function renderRecipeTabs(){
-    els.recipeTabs.innerHTML = ["breakfast","lunch","snack"].map(function(t){
+    els.recipeTabs.innerHTML = ["breakfast","lunch","lunch2","snack"].map(function(t){
       return '<button class="chip'+(t===recipeFilter?" on":"")+'" data-rt="'+t+'">'+MEAL_LABEL[t]+'</button>';
     }).join("");
     els.recipeTabs.querySelectorAll("[data-rt]").forEach(function(b){
@@ -2386,7 +2429,7 @@
   }
 
   function renderJudgeTypes(){
-    els.judgeTypeRow.innerHTML = ["breakfast","lunch","snack"].map(function(t){
+    els.judgeTypeRow.innerHTML = ["breakfast","lunch","lunch2","snack"].map(function(t){
       return '<button class="chip'+(t===judgeType?" on":"")+'" data-jt="'+t+'">'+MEAL_LABEL[t]+'</button>';
     }).join("");
     els.judgeTypeRow.querySelectorAll("[data-jt]").forEach(function(b){
