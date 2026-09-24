@@ -206,6 +206,12 @@
   .field-row select{border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--ink);padding:6px 8px;font-size:.85rem;width:110px;font-family:inherit}
   .field-row input[type=time],.field-row input[type=number]{border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--ink);padding:6px 8px;font-size:.85rem;width:110px}
   .list-editor{display:flex;flex-direction:column;gap:8px}
+  .meal-editor{display:flex;flex-direction:column;gap:10px}
+  .meal-row{border:1px solid var(--border);border-radius:12px;padding:10px;background:var(--surface-2);display:flex;gap:8px;align-items:flex-start}
+  .meal-row .fields{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+  .meal-row input.mname{border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--ink);padding:8px 10px;font-size:.85rem;font-weight:600;font-family:inherit;width:100%}
+  .meal-row textarea.mdesc{border:1px solid var(--border);border-radius:9px;background:var(--surface);color:var(--ink);padding:8px 10px;font-size:.8rem;font-family:inherit;min-height:52px;resize:vertical;width:100%}
+  .meal-row .rm{border:none;background:var(--danger-soft);color:var(--danger);border-radius:8px;width:30px;height:30px;flex:none;cursor:pointer;font-size:.9rem}
   .list-row{display:flex;gap:6px;align-items:center}
   .list-row input[type=text]{flex:1;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--ink);padding:8px 10px;font-size:.84rem;min-width:0}
   .list-row .rm{border:none;background:var(--danger-soft);color:var(--danger);border-radius:8px;width:30px;height:30px;flex:none;cursor:pointer;font-size:.9rem}
@@ -649,19 +655,24 @@
     </div>
 
     <div class="card">
-      <h2>خيارات الإفطار (خارج البيت)</h2>
-      <div class="list-editor" id="breakfastList"></div>
-      <button class="btn ghost sm" id="addBreakfastOpt" style="margin-top:8px">+ إضافة خيار</button>
+      <h2>🍳 وجبات الإفطار</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">اسم الأكلة وتفاصيلها — تختار منها يومياً.</div>
+      <div class="meal-editor" id="mealsBreakfast"></div>
+      <button class="btn ghost sm" data-addmeal="breakfast" style="margin-top:8px">+ إضافة وجبة</button>
     </div>
 
     <div class="card">
-      <h2>وصف وجبة الغداء</h2>
-      <textarea class="plan-textarea" id="lunchTemplate"></textarea>
+      <h2>🍗 وجبات الغداء</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">اسم الأكلة وتفاصيلها — تختار منها يومياً.</div>
+      <div class="meal-editor" id="mealsLunch"></div>
+      <button class="btn ghost sm" data-addmeal="lunch" style="margin-top:8px">+ إضافة وجبة</button>
     </div>
 
     <div class="card">
-      <h2>السناك اليومي (دورة أسبوعية)</h2>
-      <div class="list-editor" id="snackList"></div>
+      <h2>🍎 وجبات السناك</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">اسم الأكلة وتفاصيلها — تختار منها يومياً.</div>
+      <div class="meal-editor" id="mealsSnack"></div>
+      <button class="btn ghost sm" data-addmeal="snack" style="margin-top:8px">+ إضافة وجبة</button>
     </div>
 
     <div class="card">
@@ -727,7 +738,6 @@
   /* ======================================================= helpers ===== */
   var WEEKDAY_AR = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
   var WEEKDAY_SHORT = ["أحد","اثن","ثلا","أرب","خمي","جمع","سبت"];
-  var SNACK_EMOJIS = ["🍎","🌰","🍊","🥤","🥕","🍊","🥤"];
   var ARABIC_MONTHS = ["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"];
 
   function pad(n){ return n<10 ? "0"+n : ""+n; }
@@ -759,13 +769,25 @@
       work:{breakfast:"07:00", snack:"12:30", coffee:"14:30", lunch:"17:00"},
       holiday:{breakfast:"09:30", lunch:"14:00", snack:"18:00"}
     },
-    breakfastOptions:[
-      "3 بيضات مسلوقة + نصف صمونة + خيار/طماطة",
-      "فول بدون زيت (كوب) + نصف صمونة",
-      "تونة بالماء (علبة كاملة) + نصف صمونة"
-    ],
-    lunchTemplate:"بروتين 200غ (دجاج/لحم قليل الدهن/سمك) + 3 ملاعق طعام رز مكبوسة فقط أو نصف رغيف بدلها + نصف الصحن خضار بدون صوص، ليمون وملعقة زيت زيتون كحد أقصى.",
-    snacks:["تفاحة واحدة","15 حبة لوز","برتقالة واحدة","شيك بروتين (سكوب بالماء)","جزرتان أو خيارتان","حبتان مندرين","شيك بروتين (سكوب بالماء)"],
+    meals:{
+      breakfast:[
+        {n:"بيض مسلوق", d:"3 بيضات مسلوقة + نصف صمونة + خيار وطماطة"},
+        {n:"فول بدون زيت", d:"كوب فول + ليمون وكمون + نصف صمونة"},
+        {n:"تونة بالماء", d:"علبة كاملة مصفّاة + نصف صمونة + خضار"}
+      ],
+      lunch:[
+        {n:"بروتين مشوي مع رز", d:"200غ دجاج أو لحم قليل الدهن أو سمك + 3 ملاعق رز مكبوسة + نصف الصحن خضار بدون صوص"},
+        {n:"بروتين مع نصف رغيف", d:"200غ بروتين + نصف رغيف بدل الرز + سلطة، ليمون وملعقة زيت زيتون كحد أقصى"}
+      ],
+      snack:[
+        {n:"تفاحة واحدة", d:"95 سعرة — جاهزة بدون تحضير"},
+        {n:"15 حبة لوز", d:"105 سعرة — عدّها قبل، لا تاكل من الكيس"},
+        {n:"برتقالة واحدة", d:"62 سعرة"},
+        {n:"شيك بروتين", d:"سكوب بالماء — 120 سعرة و24 غ بروتين"},
+        {n:"جزرتان أو خيارتان", d:"60 سعرة — أخف سناك"},
+        {n:"حبتان مندرين", d:"94 سعرة"}
+      ]
+    },
     waterGoalCups:8,
     walkMinutes:45,
     kitchenClose:"20:30",
@@ -773,6 +795,37 @@
   };
 
   function cloneDefaultSettings(){ return JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); }
+
+  // ترقية الإعدادات القديمة (خيارات إفطار نصية + وصف غداء + سناك أسبوعي) للشكل الموحّد
+  function migrateSettings(st){
+    if (!st) return cloneDefaultSettings();
+    if (st.meals && st.meals.breakfast) return st;
+    var m = { breakfast: [], lunch: [], snack: [] };
+
+    (st.breakfastOptions || []).forEach(function(x){
+      if (x && x.trim()) m.breakfast.push({ n: x.split("+")[0].trim().slice(0,40), d: x.trim() });
+    });
+    (st.lunchTemplate || "").split("\n").forEach(function(line){
+      line = line.replace(/^•\s*/, "").trim();
+      if (!line) return;
+      var parts = line.split("—");
+      m.lunch.push(parts.length > 1 ? { n: parts[0].trim(), d: parts.slice(1).join("—").trim() }
+                                    : { n: line.slice(0,40), d: line });
+    });
+    var seen = {};
+    (st.snacks || []).forEach(function(x){
+      if (x && x.trim() && !seen[x]){ seen[x] = 1; m.snack.push({ n: x.trim(), d: "" }); }
+    });
+
+    var def = cloneDefaultSettings();
+    st.meals = {
+      breakfast: m.breakfast.length ? m.breakfast : def.meals.breakfast,
+      lunch:     m.lunch.length     ? m.lunch     : def.meals.lunch,
+      snack:     m.snack.length     ? m.snack     : def.meals.snack
+    };
+    delete st.breakfastOptions; delete st.lunchTemplate; delete st.snacks;
+    return st;
+  }
 
   var DAY_DEFAULT = { breakfast:false, lunch:false, walk:false, sleep:false, waterCups:0, snackDone:false, coffeeB:false, coffeeL:false, walks:[], walkKm:0, meals:{} };
 
@@ -796,7 +849,7 @@
    "shotBtn","shotInput","shotPreviewWrap","shotPreview","shotAskBtn","shotSaveBtn","shotNote","shotGallery",
    "foodSearch","foodChips","foodResults","calcKm","calcWalkOut","calcWaterOut","calcBmiOut","calcTdeeOut","askInput","askBtn",
    "ruleWater","ruleKitchen","weekdayGrid","tWorkBreakfast","tWorkSnack","tWorkCoffee","tWorkLunch",
-   "tHolBreakfast","tHolLunch","tHolSnack","breakfastList","addBreakfastOpt","lunchTemplate","snackList",
+   "tHolBreakfast","tHolLunch","tHolSnack","mealsBreakfast","mealsLunch","mealsSnack",
    "milkW1","milkW2","milkW3","setWaterGoal","setWalkMin","setKitchenClose",
    "setHeight","setAge","setSex","setStartWeight","setGoalWeight","setKcal","setProtein",
    "saveSettingsBtn","resetSettingsBtn","toast","toastPill"
@@ -827,8 +880,11 @@
   /* ======================================================= schedule ===== */
   function isWorkDay(d){ return settings.workDays.indexOf(d.getDay()) !== -1; }
   function todaySchedule(){ return isWorkDay(new Date()) ? settings.times.work : settings.times.holiday; }
-  function todaySnackText(){ return settings.snacks[new Date().getDay()] || "—"; }
-  function todaySnackEmoji(){ return SNACK_EMOJIS[new Date().getDay()] || "🍽️"; }
+  function mealHint(type){
+    var list = (settings.meals && settings.meals[type]) || [];
+    if (!list.length) return null;
+    return "اختر من " + list.length + " وجبات بتبويب الخطة";
+  }
 
   function milkForToday(){
     var start = (profile && profile.startDate) ? new Date(profile.startDate) : new Date(DEFAULT_PROFILE.startDate);
@@ -846,9 +902,9 @@
     var sched = todaySchedule();
     var chosen = dayData.meals || {};
     return [
-      {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast, sub:chosen.breakfast || null},
-      {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch, sub:chosen.lunch || null},
-      {key:"snackDone", icon:todaySnackEmoji(), label:"السناك", time:sched.snack, sub:chosen.snack || todaySnackText()},
+      {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast, sub:chosen.breakfast || mealHint("breakfast")},
+      {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch, sub:chosen.lunch || mealHint("lunch")},
+      {key:"snackDone", icon:"🍎", label:"السناك", time:sched.snack, sub:chosen.snack || mealHint("snack")},
       {key:"water", icon:"💧", label:"الماء", sub:"هدفك "+(settings.waterGoalCups||8)+" أكواب"},
       {key:"walk", icon:"🚶", label:"المشي", sub:(settings.walkMinutes||45)+" دقيقة أو تمارين بديلة"},
       {key:"sleep", icon:"🌙", label:"نوم مبكر / بدون أكل ليلي"}
@@ -1334,34 +1390,55 @@
     });
   }
 
-  function renderBreakfastList(){
-    els.breakfastList.innerHTML = "";
-    settings.breakfastOptions.forEach(function(opt, idx){
-      var row = document.createElement("div"); row.className="list-row";
-      var input = document.createElement("input"); input.type="text"; input.value=opt;
-      input.addEventListener("input", function(){ settings.breakfastOptions[idx] = input.value; });
-      var rm = document.createElement("button"); rm.className="rm"; rm.type="button"; rm.textContent="✕";
-      rm.addEventListener("click", function(){ settings.breakfastOptions.splice(idx,1); renderBreakfastList(); });
-      row.appendChild(input); row.appendChild(rm);
-      els.breakfastList.appendChild(row);
-    });
-  }
-  els.addBreakfastOpt.addEventListener("click", function(){
-    settings.breakfastOptions.push("");
-    renderBreakfastList();
-  });
+  var MEAL_BOX = { breakfast:"mealsBreakfast", lunch:"mealsLunch", snack:"mealsSnack" };
 
-  function renderSnackList(){
-    els.snackList.innerHTML = "";
-    WEEKDAY_AR.forEach(function(name, idx){
-      var row = document.createElement("div"); row.className="snack-row";
-      var day = document.createElement("div"); day.className="day"; day.textContent = SNACK_EMOJIS[idx]+" "+name;
-      var input = document.createElement("input"); input.type="text"; input.value = settings.snacks[idx] || "";
-      input.addEventListener("input", function(){ settings.snacks[idx] = input.value; });
-      row.appendChild(day); row.appendChild(input);
-      els.snackList.appendChild(row);
+  function mealList(type){
+    settings.meals = settings.meals || {breakfast:[],lunch:[],snack:[]};
+    settings.meals[type] = settings.meals[type] || [];
+    return settings.meals[type];
+  }
+
+  function renderMealEditor(type){
+    var box = els[MEAL_BOX[type]];
+    if (!box) return;
+    var list = mealList(type);
+    box.innerHTML = "";
+    if (!list.length){
+      box.innerHTML = '<div class="empty-note" style="text-align:right">ماكو وجبات — اضغط "إضافة وجبة".</div>';
+      return;
+    }
+    list.forEach(function(item, idx){
+      var row = document.createElement("div"); row.className = "meal-row";
+      var fields = document.createElement("div"); fields.className = "fields";
+
+      var name = document.createElement("input");
+      name.type = "text"; name.className = "mname"; name.placeholder = "اسم الأكلة";
+      name.value = item.n || "";
+      name.addEventListener("input", function(){ item.n = name.value; });
+
+      var desc = document.createElement("textarea");
+      desc.className = "mdesc"; desc.placeholder = "التفاصيل: المكوّنات والكمية";
+      desc.value = item.d || "";
+      desc.addEventListener("input", function(){ item.d = desc.value; });
+
+      var rm = document.createElement("button");
+      rm.className = "rm"; rm.type = "button"; rm.textContent = "✕";
+      rm.addEventListener("click", function(){ list.splice(idx,1); renderMealEditor(type); renderDayUI(); });
+
+      fields.appendChild(name); fields.appendChild(desc);
+      row.appendChild(fields); row.appendChild(rm);
+      box.appendChild(row);
     });
   }
+
+  function renderAllMealEditors(){ ["breakfast","lunch","snack"].forEach(renderMealEditor); }
+
+  document.querySelectorAll("[data-addmeal]").forEach(function(b){
+    b.addEventListener("click", function(){
+      mealList(b.dataset.addmeal).push({n:"", d:""});
+      renderMealEditor(b.dataset.addmeal);
+    });
+  });
 
   function fillSettingsForm(){
     renderWeekdayGrid();
@@ -1372,9 +1449,7 @@
     els.tHolBreakfast.value = settings.times.holiday.breakfast || "";
     els.tHolLunch.value = settings.times.holiday.lunch || "";
     els.tHolSnack.value = settings.times.holiday.snack || "";
-    renderBreakfastList();
-    els.lunchTemplate.value = settings.lunchTemplate || "";
-    renderSnackList();
+    renderAllMealEditors();
     var wk = settings.milkWeeks || [40,30,20];
     els.milkW1.value = wk[0]; els.milkW2.value = wk[1]; els.milkW3.value = wk[2];
     els.setWaterGoal.value = settings.waterGoalCups || 8;
@@ -1399,12 +1474,14 @@
     settings.times.holiday.breakfast = els.tHolBreakfast.value;
     settings.times.holiday.lunch = els.tHolLunch.value;
     settings.times.holiday.snack = els.tHolSnack.value;
-    settings.lunchTemplate = els.lunchTemplate.value;
+
     settings.milkWeeks = [parseInt(els.milkW1.value,10)||0, parseInt(els.milkW2.value,10)||0, parseInt(els.milkW3.value,10)||0];
     settings.waterGoalCups = parseInt(els.setWaterGoal.value,10) || 8;
     settings.walkMinutes = parseInt(els.setWalkMin.value,10) || 45;
     settings.kitchenClose = els.setKitchenClose.value || "20:30";
-    settings.breakfastOptions = settings.breakfastOptions.filter(function(s){ return s && s.trim(); });
+    ["breakfast","lunch","snack"].forEach(function(t){
+      settings.meals[t] = mealList(t).filter(function(x){ return x && (x.n||"").trim(); });
+    });
     return settings;
   }
 
@@ -1919,27 +1996,15 @@
     els.recipeList.querySelectorAll("[data-addopt]").forEach(function(b){
       b.addEventListener("click", function(){
         var r = list[+b.dataset.addopt];
-        var msg;
-        if (r.t === "breakfast"){
-          settings.breakfastOptions = settings.breakfastOptions || [];
-          if (settings.breakfastOptions.indexOf(r.n) !== -1){ toast("موجودة أصلاً بخياراتك"); return; }
-          settings.breakfastOptions.push(r.n);
-          msg = "انضافت لخيارات الإفطار بتبويب الخطة ✅";
-        } else if (r.t === "lunch"){
-          var line = "• " + r.n + " — " + r.i.join(" · ");
-          if ((settings.lunchTemplate || "").indexOf(r.n) !== -1){ toast("موجودة أصلاً بوصف الغداء"); return; }
-          settings.lunchTemplate = (settings.lunchTemplate || "").trim() + "\n" + line;
-          msg = "انضافت لوصف الغداء بتبويب الخطة ✅";
-        } else {
-          var wd = new Date().getDay();
-          settings.snacks = settings.snacks || [];
-          settings.snacks[wd] = r.n;
-          msg = "صارت سناك يوم " + WEEKDAY_AR[wd] + " — تعدّلها من تبويب الخطة";
+        var target = mealList(r.t);
+        for (var k=0;k<target.length;k++){
+          if ((target[k].n || "").trim() === r.n){ toast("موجودة أصلاً بوجبات " + MEAL_LABEL[r.t]); return; }
         }
+        target.push({ n: r.n, d: r.i.join(" · ") + " — " + r.c + " سعرة، بروتين " + r.p + " غ" });
         persistSettings();
-        fillSettingsForm();
+        renderAllMealEditors();
         renderDayUI();
-        toast(msg);
+        toast("انضافت لوجبات " + MEAL_LABEL[r.t] + " بتبويب الخطة ✅");
       });
     });
   }
@@ -2530,7 +2595,7 @@
       if (!confirm("استرجاع النسخة؟ راح تستبدل بياناتك الحالية بـ " + n + " يوم من الملف.")) return;
       try {
         if (data.profile) lsSet("profile", data.profile);
-        if (data.settings) lsSet("settings", Object.assign(cloneDefaultSettings(), data.settings));
+        if (data.settings) lsSet("settings", migrateSettings(Object.assign(cloneDefaultSettings(), data.settings)));
         if (data.days) Object.keys(data.days).forEach(function(k){ lsSet("day_" + k, data.days[k]); });
         if (db){
           if (data.profile) db.doc("profile/me").set(data.profile).catch(function(){});
@@ -2584,7 +2649,7 @@
   function bootLocalStore(){
     usingLocalStore = true;
     profile = lsGet("profile") || DEFAULT_PROFILE;
-    settings = lsGet("settings") || cloneDefaultSettings();
+    settings = migrateSettings(lsGet("settings")) || cloneDefaultSettings();
     lsSet("profile", profile);
     lsSet("settings", settings);
     dayData = Object.assign({}, DAY_DEFAULT, lsGet("day_"+todayStr) || {});
@@ -2607,7 +2672,7 @@
       });
 
       db.doc("settings/plan").onSnapshot(function(snap){
-        if (snap.exists) settings = Object.assign(cloneDefaultSettings(), snap.data());
+        if (snap.exists) settings = migrateSettings(Object.assign(cloneDefaultSettings(), snap.data()));
         else if (!settings) settings = cloneDefaultSettings();
         gotSettings = true;
         if (booted){ fillSettingsForm(); renderDayUI(); }
