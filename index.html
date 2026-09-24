@@ -203,6 +203,7 @@
   .sched-block h3{font-size:.86rem;margin-bottom:8px}
   .field-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
   .field-row label{font-size:.82rem;color:var(--ink);flex:1}
+  .field-row select{border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--ink);padding:6px 8px;font-size:.85rem;width:110px;font-family:inherit}
   .field-row input[type=time],.field-row input[type=number]{border:1px solid var(--border);border-radius:8px;background:var(--surface-2);color:var(--ink);padding:6px 8px;font-size:.85rem;width:110px}
   .list-editor{display:flex;flex-direction:column;gap:8px}
   .list-row{display:flex;gap:6px;align-items:center}
@@ -253,11 +254,33 @@
   .walk-btn{width:100%;margin-top:14px;padding:13px;font-size:.95rem}
   .walk-btn.stop{background:var(--danger);color:#fff}
   .walk-status{font-size:.75rem;color:var(--muted);margin-top:10px;line-height:1.7}
-  .walk-map{height:260px;width:100%;background:var(--surface-2)}
+  .map-card{position:relative}
+  .walk-map{height:300px;width:100%;background:var(--surface-2)}
+  .me-icon{background:none;border:none}
+  .me-dot{width:38px;height:38px;border-radius:50%;background:var(--surface);border:2.5px solid var(--accent);
+          display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+  .me-dot.live{animation:mePulse 1.6s ease-out infinite}
+  @keyframes mePulse{
+    0%{box-shadow:0 0 0 0 rgba(47,163,122,.55), 0 2px 8px rgba(0,0,0,.35)}
+    70%{box-shadow:0 0 0 16px rgba(47,163,122,0), 0 2px 8px rgba(0,0,0,.35)}
+    100%{box-shadow:0 0 0 0 rgba(47,163,122,0), 0 2px 8px rgba(0,0,0,.35)}
+  }
+  .recenter-btn{position:absolute;bottom:14px;inset-inline-start:14px;z-index:500;width:42px;height:42px;border-radius:50%;
+                border:1px solid var(--border);background:var(--surface);color:var(--ink);font-size:1.1rem;
+                box-shadow:var(--shadow);cursor:pointer;display:flex;align-items:center;justify-content:center}
   .walk-map .leaflet-control-attribution{font-size:9px}
   .walk-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 2px;border-bottom:1px solid var(--border);font-size:.84rem}
   .walk-item:last-child{border-bottom:none}
   .walk-item .meta{color:var(--muted);font-size:.74rem}
+
+  /* ---------- meal photos ---------- */
+  .shot-img{width:100%;border-radius:14px;margin-top:12px;display:block;border:1px solid var(--border)}
+  .shot-strip{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px}
+  .shot-thumb{position:relative;flex:none}
+  .shot-thumb img{width:74px;height:74px;object-fit:cover;border-radius:12px;border:1px solid var(--border);display:block}
+  .shot-thumb .rm{position:absolute;top:-6px;inset-inline-end:-6px;width:22px;height:22px;border-radius:50%;border:none;
+                  background:var(--danger);color:#fff;font-size:.7rem;cursor:pointer;line-height:1}
+  .shot-thumb .tm{font-size:.62rem;color:var(--muted);text-align:center;margin-top:3px}
 
   /* ---------- assistant ---------- */
   .search-wrap input{width:100%;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);color:var(--ink);padding:11px 13px;font-size:.9rem;font-family:inherit}
@@ -442,8 +465,9 @@
       <div class="walk-status" id="walkStatus">اضغط ابدأ، وخلّي الشاشة شغالة أثناء المشي حتى يسجّل المسار بدقة.</div>
     </div>
 
-    <div class="card" style="padding:0;overflow:hidden">
+    <div class="card map-card" style="padding:0;overflow:hidden">
       <div id="walkMap" class="walk-map"></div>
+      <button class="recenter-btn" id="recenterBtn" title="موقعي">📍</button>
     </div>
 
     <div class="card">
@@ -459,6 +483,22 @@
 
   <!-- ===================== TAB: المساعد ===================== -->
   <section class="panel" id="tab-assist">
+
+    <div class="card">
+      <h2>📷 صوّر وجبتك</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">صوّر الأكلة، وابعثها للمدرب حتى ينطيك السعرات والكمية المناسبة لك، أو احفظها بسجل يومك.</div>
+      <button class="btn block" id="shotBtn">📷 التقط صورة الأكلة</button>
+      <input type="file" id="shotInput" accept="image/*" capture="environment" hidden>
+      <div id="shotPreviewWrap" hidden>
+        <img id="shotPreview" class="shot-img" alt="صورة الوجبة">
+        <div class="backup-row" style="margin-top:10px">
+          <button class="btn" id="shotAskBtn">💬 اسأل المدرب</button>
+          <button class="btn ghost" id="shotSaveBtn">💾 احفظ بسجل اليوم</button>
+        </div>
+        <div class="empty-note" id="shotNote" style="text-align:right;padding-top:8px"></div>
+      </div>
+      <div id="shotGallery"></div>
+    </div>
 
     <div class="card">
       <h2>ابحث عن أي أكلة</h2>
@@ -579,6 +619,7 @@
       <h2>بيانات الجسم</h2>
       <div class="field-row"><label>الطول (سم)</label><input type="number" id="setHeight"></div>
       <div class="field-row"><label>العمر</label><input type="number" id="setAge"></div>
+      <div class="field-row"><label>الجنس</label><select id="setSex"><option value="male">رجل</option><option value="female">امرأة</option></select></div>
       <div class="field-row"><label>وزن البداية (كغم)</label><input type="number" step="0.1" id="setStartWeight"></div>
       <div class="field-row"><label>الوزن الهدف (كغم)</label><input type="number" step="0.1" id="setGoalWeight"></div>
       <div class="field-row"><label>السعرات المستهدفة</label><input type="number" id="setKcal"></div>
@@ -645,7 +686,7 @@
   var usingLocalStore = false;
 
   /* ======================================================= defaults ===== */
-  var DEFAULT_PROFILE = {heightCm:179, age:33, startWeight:89, currentWeight:89, goalWeight:80,
+  var DEFAULT_PROFILE = {heightCm:179, age:33, sex:"male", startWeight:89, currentWeight:89, goalWeight:80,
                           targetCalories:1850, targetProteinG:145, startDate:"2026-09-05"};
 
   var DEFAULT_SETTINGS = {
@@ -686,12 +727,13 @@
    "checklist","dayTypeLbl","milkAmount","coffeeGrid","kitchenBanner",
    "weekGrid","weekStats","badgeRow","badgeNote","monthPrev","monthNext","monthLabel","calGrid","monthStats",
    "weightChartWrap","weightStats","exportBtn","importBtn","importFile","backupNote",
-   "walkKm","walkTime","walkKcal","walkPace","walkToggle","walkStatus","walkMap","walkStats","walkList","manualWalkBtn",
+   "walkKm","walkTime","walkKcal","walkPace","walkToggle","walkStatus","walkMap","walkStats","walkList","manualWalkBtn","recenterBtn",
+   "shotBtn","shotInput","shotPreviewWrap","shotPreview","shotAskBtn","shotSaveBtn","shotNote","shotGallery",
    "foodSearch","foodChips","foodResults","calcKm","calcWalkOut","calcWaterOut","calcBmiOut","calcTdeeOut","askInput","askBtn",
    "ruleWater","ruleKitchen","weekdayGrid","tWorkBreakfast","tWorkSnack","tWorkCoffee","tWorkLunch",
    "tHolBreakfast","tHolLunch","tHolSnack","breakfastList","addBreakfastOpt","lunchTemplate","snackList",
    "milkW1","milkW2","milkW3","setWaterGoal","setWalkMin","setKitchenClose",
-   "setHeight","setAge","setStartWeight","setGoalWeight","setKcal","setProtein",
+   "setHeight","setAge","setSex","setStartWeight","setGoalWeight","setKcal","setProtein",
    "saveSettingsBtn","resetSettingsBtn","toast","toastPill"
   ].forEach(function(id){ els[id] = document.getElementById(id); });
 
@@ -1275,6 +1317,7 @@
     if (profile){
       els.setHeight.value = profile.heightCm || "";
       els.setAge.value = profile.age || "";
+      els.setSex.value = profile.sex || "male";
       els.setStartWeight.value = profile.startWeight || "";
       els.setGoalWeight.value = profile.goalWeight || "";
       els.setKcal.value = profile.targetCalories || "";
@@ -1303,6 +1346,7 @@
     return {
       heightCm: parseFloat(els.setHeight.value)||profile.heightCm,
       age: parseInt(els.setAge.value,10)||profile.age,
+      sex: els.setSex.value || profile.sex || "male",
       startWeight: parseFloat(els.setStartWeight.value)||profile.startWeight,
       currentWeight: profile.currentWeight,
       goalWeight: parseFloat(els.setGoalWeight.value)||profile.goalWeight,
@@ -1357,7 +1401,7 @@
   var walk = {
     tracking: false, watchId: null, timer: null, wakeLock: null,
     startedAt: 0, elapsed: 0, km: 0, pts: [], lastFix: null,
-    map: null, line: null, marker: null, leafletReady: false
+    map: null, line: null, me: null, accCircle: null, leafletReady: false, located: false
   };
 
   function haversine(a, b){
@@ -1401,11 +1445,58 @@
     setTimeout(function(){ if (walk.map) walk.map.invalidateSize(); }, 200);
   }
 
+  function walkerEmoji(){
+    return (profile && profile.sex === "female") ? "\uD83D\uDEB6\u200D\u2640\uFE0F" : "\uD83D\uDEB6\u200D\u2642\uFE0F";
+  }
+
+  function meIcon(){
+    return L.divIcon({
+      className: "me-icon",
+      html: '<div class="me-dot' + (walk.tracking ? " live" : "") + '">' + walkerEmoji() + '</div>',
+      iconSize: [38,38], iconAnchor: [19,19]
+    });
+  }
+
+  function setMe(lat, lng, acc){
+    if (!walk.map || !window.L) return;
+    var ll = [lat, lng];
+    if (!walk.me){
+      walk.me = L.marker(ll, {icon: meIcon(), zIndexOffset: 1000, interactive: false}).addTo(walk.map);
+    } else {
+      walk.me.setLatLng(ll);
+      walk.me.setIcon(meIcon());
+    }
+    if (acc && acc > 12){
+      if (!walk.accCircle){
+        walk.accCircle = L.circle(ll, {radius: acc, color:"#2FA37A", weight:1, fillColor:"#2FA37A", fillOpacity:.12}).addTo(walk.map);
+      } else {
+        walk.accCircle.setLatLng(ll); walk.accCircle.setRadius(acc);
+      }
+    } else if (walk.accCircle){
+      walk.map.removeLayer(walk.accCircle); walk.accCircle = null;
+    }
+    walk.located = true;
+  }
+
+  function locateOnce(zoom){
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      setMe(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+      if (walk.map) walk.map.setView([pos.coords.latitude, pos.coords.longitude], zoom || 17);
+      if (!walk.tracking) els.walkStatus.textContent = "موقعك ظاهر على الخريطة. اضغط ابدأ المشي وخلّي الشاشة شغالة.";
+    }, function(err){
+      if (walk.tracking) return;
+      els.walkStatus.textContent = err.code === 1
+        ? "لازم تسمح بالوصول للموقع حتى يظهر مؤشرك على الخريطة."
+        : "ما كدرت أحدد موقعك — تأكد إن GPS مفتوح واطلع لمكان مكشوف.";
+    }, {enableHighAccuracy:true, timeout:20000, maximumAge:5000});
+  }
+
   function openWalkTab(){
     loadLeaflet(function(){
       initMap();
-      if (!walk.tracking) showLastRoute();
       if (walk.map) setTimeout(function(){ walk.map.invalidateSize(); }, 120);
+      if (!walk.tracking){ locateOnce(17); }
     });
     renderWalkDay();
     var partial = lsGet("walkPartial");
@@ -1443,7 +1534,9 @@
   function onFix(pos){
     var acc = pos.coords.accuracy;
     var pt = [pos.coords.latitude, pos.coords.longitude];
-    if (acc > 40) { els.walkStatus.textContent = "دقّة GPS ضعيفة (" + Math.round(acc) + " م) — انتظر لحظة بمكان مكشوف."; return; }
+    setMe(pt[0], pt[1], acc);
+    if (walk.map) walk.map.setView(pt, Math.max(walk.map.getZoom(), 17));
+    if (acc > 40) { els.walkStatus.textContent = "مؤشرك ظاهر، بس دقّة GPS ضعيفة (" + Math.round(acc) + " م) — المسافة ما تنحسب لين تتحسن."; return; }
     if (walk.lastFix){
       var d = haversine(walk.lastFix.pt, pt);
       var dt = (pos.timestamp - walk.lastFix.t) / 1000;
@@ -1454,10 +1547,7 @@
     walk.lastFix = {pt:pt, t:pos.timestamp};
     walk.pts.push(pt);
     els.walkStatus.textContent = "يسجّل… دقّة " + Math.round(acc) + " م";
-    if (walk.line){
-      walk.line.setLatLngs(walk.pts);
-      if (walk.map) walk.map.setView(pt, Math.max(walk.map.getZoom(), 16));
-    }
+    if (walk.line) walk.line.setLatLngs(walk.pts);
     updateWalkHud();
     lsSet("walkPartial", {km:walk.km, elapsed:walk.elapsed, pts:walk.pts.slice(-300), at:Date.now()});
   }
@@ -1481,18 +1571,26 @@
     if (walk.line) walk.line.setLatLngs([]);
     els.walkToggle.textContent = "■ إنهاء المشي";
     els.walkToggle.classList.add("stop");
-    els.walkStatus.textContent = "جاري تشغيل GPS…";
+    els.walkStatus.textContent = "جاري تحديد موقعك…";
     updateWalkHud();
     requestWakeLock();
+    if (walk.me) walk.me.setIcon(meIcon());
+    loadLeaflet(function(){ initMap(); locateOnce(18); });
     walk.timer = setInterval(function(){
       walk.elapsed = Math.floor((Date.now() - walk.startedAt)/1000);
       updateWalkHud();
     }, 1000);
     walk.watchId = navigator.geolocation.watchPosition(onFix, function(err){
-      els.walkStatus.textContent = err.code === 1
-        ? "لازم تسمح للتطبيق بالوصول للموقع من إعدادات الهاتف."
-        : "تعذّر قراءة الموقع — تأكد إن GPS مفتوح.";
-    }, {enableHighAccuracy:true, maximumAge:2000, timeout:15000});
+      if (err.code === 1){
+        els.walkStatus.textContent = "لازم تسمح للتطبيق بالوصول للموقع من إعدادات الهاتف.";
+        if (walk.tracking) stopWalk();
+        return;
+      }
+      // إشارة ضعيفة أو بطيئة — نكمل التسجيل ولا نوقف شي
+      els.walkStatus.textContent = walk.lastFix
+        ? "إشارة GPS ضعيفة لحظياً — مستمر بالتسجيل…"
+        : "جاري البحث عن إشارة GPS… اطلع لمكان مكشوف.";
+    }, {enableHighAccuracy:true, maximumAge:2000, timeout:30000});
   }
 
   function stopWalk(){
@@ -1503,6 +1601,7 @@
     if (walk.wakeLock){ try { walk.wakeLock.release(); } catch(e){} walk.wakeLock = null; }
     els.walkToggle.textContent = "▶ ابدأ المشي";
     els.walkToggle.classList.remove("stop");
+    if (walk.me) walk.me.setIcon(meIcon());
     lsSet("walkPartial", null);
     if (walk.km < 0.05){
       els.walkStatus.textContent = "المسافة قصيرة جداً — ما انحفظت مشية.";
@@ -1574,6 +1673,18 @@
 
   els.walkToggle.addEventListener("click", function(){ walk.tracking ? stopWalk() : startWalk(); });
 
+  els.recenterBtn.addEventListener("click", function(){
+    loadLeaflet(function(){
+      initMap();
+      if (walk.tracking && walk.lastFix){
+        setMe(walk.lastFix.pt[0], walk.lastFix.pt[1]);
+        walk.map.setView(walk.lastFix.pt, 18);
+      } else {
+        locateOnce(18);
+      }
+    });
+  });
+
   els.manualWalkBtn.addEventListener("click", function(){
     var km = parseFloat(prompt("كم كيلومتر مشيت؟ (مثلاً 3.5)"));
     if (!km || km <= 0) return;
@@ -1581,6 +1692,122 @@
     if (!mins || mins <= 0) mins = Math.round(km * 12);
     saveWalk(km, mins * 60, []);
   });
+
+  /* ======================================================= meal photos == */
+  var shot = { blob: null, dataUrl: null };
+
+  function compressImage(file, maxSide, quality, cb){
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      var scale = Math.min(1, maxSide / Math.max(w, h));
+      var cw = Math.round(w * scale), ch = Math.round(h * scale);
+      var cv = document.createElement("canvas");
+      cv.width = cw; cv.height = ch;
+      cv.getContext("2d").drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(url);
+      cv.toBlob(function(blob){
+        cb(blob, cv.toDataURL("image/jpeg", quality));
+      }, "image/jpeg", quality);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); cb(null, null); };
+    img.src = url;
+  }
+
+  els.shotBtn.addEventListener("click", function(){ els.shotInput.click(); });
+
+  els.shotInput.addEventListener("change", function(){
+    var file = els.shotInput.files && els.shotInput.files[0];
+    els.shotInput.value = "";
+    if (!file) return;
+    els.shotNote.textContent = "جاري تجهيز الصورة…";
+    els.shotPreviewWrap.hidden = false;
+    compressImage(file, 1024, 0.8, function(blob, dataUrl){
+      if (!blob){ els.shotNote.textContent = "تعذّر قراءة الصورة، جرّب مرة ثانية."; return; }
+      shot.blob = blob;
+      compressImage(file, 520, 0.55, function(_b, thumb){ shot.dataUrl = thumb || dataUrl; });
+      els.shotPreview.src = dataUrl;
+      els.shotNote.textContent = "";
+    });
+  });
+
+  function photoQuestion(){
+    return "هذي صورة وجبتي. شنو الأكلة تقريباً؟ كم سعرة بالكمية الظاهرة بالصورة؟ " +
+      "وهل تناسب خطتي؟ وإذا ما تناسب، شكد الكمية المسموحة أو شنو البديل؟\n\n" +
+      "خطتي: وجبتان رئيسيتان (إفطار وغداء) + سناك واحد، بدون سكر ولا صوصات ولا قلي. " +
+      "وزني " + ((profile && profile.currentWeight) || "—") + " كغم، هدفي " +
+      ((profile && profile.goalWeight) || 80) + " كغم، سعراتي المستهدفة " +
+      ((profile && profile.targetCalories) || 1850) + " والبروتين " +
+      ((profile && profile.targetProteinG) || 145) + " غ. جاوبني مختصر وعملي.";
+  }
+
+  els.shotAskBtn.addEventListener("click", function(){
+    if (!shot.blob){ els.shotNote.textContent = "صوّر الأكلة أولاً."; return; }
+    var file = new File([shot.blob], "meal.jpg", {type:"image/jpeg"});
+    var q = photoQuestion();
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({ files:[file], text: q, title:"تقييم وجبة" })
+        .then(function(){ els.shotNote.textContent = "انبعثت للمدرب ✅"; })
+        .catch(function(){});
+    } else {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(shot.blob);
+      a.download = "meal-" + Date.now() + ".jpg";
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      els.shotNote.textContent = "متصفحك ما يدعم المشاركة المباشرة — نزّلت الصورة لك، افتح المدرب وأرفقها من المعرض.";
+      window.open("https://claude.ai/new?q=" + encodeURIComponent(q), "_blank");
+    }
+  });
+
+  function photosKey(d){ return "photos_" + d; }
+
+  function loadPhotos(d){ return lsGet(photosKey(d)) || []; }
+
+  function prunePhotos(){
+    try {
+      var keep = {};
+      for (var i=0;i<8;i++){ var x=new Date(); x.setDate(x.getDate()-i); keep[photosKey(dateKey(x))] = 1; }
+      var toRemove = [];
+      for (var j=0;j<localStorage.length;j++){
+        var k = localStorage.key(j);
+        if (k && k.indexOf(LS_PREFIX+"photos_") === 0 && !keep[k.slice(LS_PREFIX.length)]) toRemove.push(k);
+      }
+      toRemove.forEach(function(k){ try { localStorage.removeItem(k); } catch(e){} });
+    } catch(e){}
+  }
+
+  els.shotSaveBtn.addEventListener("click", function(){
+    if (!shot.dataUrl){ els.shotNote.textContent = "صوّر الأكلة أولاً."; return; }
+    prunePhotos();
+    var list = loadPhotos(todayStr);
+    if (list.length >= 4){ els.shotNote.textContent = "وصلت أقصى ٤ صور لليوم — احذف وحدة قبل ما تضيف."; return; }
+    list.push({ t: Date.now(), d: shot.dataUrl });
+    try { lsSet(photosKey(todayStr), list); }
+    catch(e){ els.shotNote.textContent = "ذاكرة الجهاز ممتلئة — احذف صور قديمة."; return; }
+    els.shotNote.textContent = "انحفظت بسجل اليوم ✅";
+    renderPhotoStrip();
+  });
+
+  function renderPhotoStrip(){
+    var list = loadPhotos(todayStr);
+    if (!list.length){ els.shotGallery.innerHTML = ""; return; }
+    els.shotGallery.innerHTML = '<div class="empty-note" style="text-align:right;padding:10px 0 0">صور اليوم (' + list.length + '/4)</div>' +
+      '<div class="shot-strip">' + list.map(function(ph, i){
+        var t = new Date(ph.t);
+        return '<div class="shot-thumb"><img src="'+ph.d+'" alt="وجبة"><button class="rm" data-ph="'+i+'">✕</button>' +
+               '<div class="tm mono">'+pad(t.getHours())+":"+pad(t.getMinutes())+'</div></div>';
+      }).join("") + '</div>';
+    els.shotGallery.querySelectorAll("[data-ph]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var l = loadPhotos(todayStr);
+        l.splice(+b.dataset.ph, 1);
+        lsSet(photosKey(todayStr), l);
+        renderPhotoStrip();
+      });
+    });
+  }
 
   /* ======================================================= assistant ==== */
   /* السعرات تقريبية لكل حصة شائعة — v: ok / limit / no */
@@ -1695,6 +1922,7 @@
   var QUICK_CHIPS = ["رز","دجاج","صمونة","تمر","قهوة","سلطة","شاورما","لوز"];
 
   function renderAssistDefaults(){
+    renderPhotoStrip();
     if (!els.foodChips.innerHTML){
       els.foodChips.innerHTML = QUICK_CHIPS.map(function(c){ return '<button class="chip" data-q="'+c+'">'+c+'</button>'; }).join("");
       els.foodChips.querySelectorAll(".chip").forEach(function(c){
@@ -1729,7 +1957,7 @@
     } else els.calcBmiOut.textContent = "—";
 
     if (w && h){
-      var bmr = 10*w + 6.25*h - 5*age + 5;
+      var bmr = 10*w + 6.25*h - 5*age + ((profile && profile.sex === "female") ? -161 : 5);
       var tdee = Math.round(bmr * 1.35);
       els.calcTdeeOut.textContent = "حرقك التقريبي " + tdee + " سعرة · للنزول استهدف " + (profile.targetCalories || Math.round(tdee-500)) + " سعرة";
     } else els.calcTdeeOut.textContent = "—";
