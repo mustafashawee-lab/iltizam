@@ -774,7 +774,7 @@
 
   function cloneDefaultSettings(){ return JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); }
 
-  var DAY_DEFAULT = { breakfast:false, lunch:false, walk:false, sleep:false, waterCups:0, snackDone:false, coffeeB:false, coffeeL:false, walks:[], walkKm:0 };
+  var DAY_DEFAULT = { breakfast:false, lunch:false, walk:false, sleep:false, waterCups:0, snackDone:false, coffeeB:false, coffeeL:false, walks:[], walkKm:0, meals:{} };
 
   /* ======================================================= state ======== */
   var todayStr = dateKey(new Date());
@@ -844,10 +844,11 @@
   /* ======================================================= checklist ==== */
   function buildCheckItems(){
     var sched = todaySchedule();
+    var chosen = dayData.meals || {};
     return [
-      {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast},
-      {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch},
-      {key:"snackDone", icon:todaySnackEmoji(), label:"السناك", time:sched.snack, sub:todaySnackText()},
+      {key:"breakfast", icon:"🍳", label:"الإفطار", time:sched.breakfast, sub:chosen.breakfast || null},
+      {key:"lunch", icon:"🍗", label:"الغداء", time:sched.lunch, sub:chosen.lunch || null},
+      {key:"snackDone", icon:todaySnackEmoji(), label:"السناك", time:sched.snack, sub:chosen.snack || todaySnackText()},
       {key:"water", icon:"💧", label:"الماء", sub:"هدفك "+(settings.waterGoalCups||8)+" أكواب"},
       {key:"walk", icon:"🚶", label:"المشي", sub:(settings.walkMinutes||45)+" دقيقة أو تمارين بديلة"},
       {key:"sleep", icon:"🌙", label:"نوم مبكر / بدون أكل ليلي"}
@@ -1874,6 +1875,11 @@
     return Math.round(target * frac);
   }
 
+  function persistSettings(){
+    lsSet("settings", settings);
+    if (db && !usingLocalStore) db.doc("settings/plan").set(settings).catch(function(){});
+  }
+
   function renderRecipeTabs(){
     els.recipeTabs.innerHTML = ["breakfast","lunch","snack"].map(function(t){
       return '<button class="chip'+(t===recipeFilter?" on":"")+'" data-rt="'+t+'">'+MEAL_LABEL[t]+'</button>';
@@ -1892,16 +1898,48 @@
         '<div class="rsec"><b>المكوّنات:</b><br>'+r.i.join(" · ")+'</div>' +
         '<div class="rsec"><b>التحضير:</b><br>'+r.s+'</div>' +
         '<div class="rtip">💡 '+r.tip+'</div>' +
-        '<button class="btn ghost sm" data-adopt="'+i+'">✅ اعتمدها لليوم</button>' +
-        '</div>';
+        '<div class="backup-row" style="margin-top:10px">' +
+          '<button class="btn sm" data-adopt="'+i+'">✅ أكلتها اليوم</button>' +
+          '<button class="btn ghost sm" data-addopt="'+i+'">➕ أضفها لخياراتي</button>' +
+        '</div></div>';
     }).join("");
+
     els.recipeList.querySelectorAll("[data-adopt]").forEach(function(b){
       b.addEventListener("click", function(){
         var r = list[+b.dataset.adopt];
         var key = r.t === "snack" ? "snackDone" : r.t;
-        var patch = {}; patch[key] = true;
+        var meals = Object.assign({}, dayData.meals || {});
+        meals[r.t] = r.n;
+        var patch = { meals: meals }; patch[key] = true;
         updateDay(patch);
-        toast("تم اعتماد " + MEAL_LABEL[r.t] + " ✅");
+        toast("انسجلت بـ" + MEAL_LABEL[r.t] + " اليوم ✅");
+      });
+    });
+
+    els.recipeList.querySelectorAll("[data-addopt]").forEach(function(b){
+      b.addEventListener("click", function(){
+        var r = list[+b.dataset.addopt];
+        var msg;
+        if (r.t === "breakfast"){
+          settings.breakfastOptions = settings.breakfastOptions || [];
+          if (settings.breakfastOptions.indexOf(r.n) !== -1){ toast("موجودة أصلاً بخياراتك"); return; }
+          settings.breakfastOptions.push(r.n);
+          msg = "انضافت لخيارات الإفطار بتبويب الخطة ✅";
+        } else if (r.t === "lunch"){
+          var line = "• " + r.n + " — " + r.i.join(" · ");
+          if ((settings.lunchTemplate || "").indexOf(r.n) !== -1){ toast("موجودة أصلاً بوصف الغداء"); return; }
+          settings.lunchTemplate = (settings.lunchTemplate || "").trim() + "\n" + line;
+          msg = "انضافت لوصف الغداء بتبويب الخطة ✅";
+        } else {
+          var wd = new Date().getDay();
+          settings.snacks = settings.snacks || [];
+          settings.snacks[wd] = r.n;
+          msg = "صارت سناك يوم " + WEEKDAY_AR[wd] + " — تعدّلها من تبويب الخطة";
+        }
+        persistSettings();
+        fillSettingsForm();
+        renderDayUI();
+        toast(msg);
       });
     });
   }
@@ -2134,9 +2172,11 @@
     var acc = document.getElementById("judgeAcceptBtn");
     if (acc) acc.addEventListener("click", function(){
       var key = judgeType === "snack" ? "snackDone" : judgeType;
-      var patch = {}; patch[key] = true;
+      var meals = Object.assign({}, dayData.meals || {});
+      meals[judgeType] = text.length > 60 ? text.slice(0,60) + "…" : text;
+      var patch = { meals: meals }; patch[key] = true;
       updateDay(patch);
-      toast("تم اعتماد " + MEAL_LABEL[judgeType] + " ✅");
+      toast("انسجلت بـ" + MEAL_LABEL[judgeType] + " اليوم ✅");
     });
   }
 
