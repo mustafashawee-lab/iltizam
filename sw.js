@@ -1,10 +1,7 @@
-// سجل الالتزام — service worker (minimal shell cache, required for installability).
-// This app's live data lives in the "db" capability which only exists when the
-// page is opened embedded from the Claude chat card. When installed and opened
-// standalone, db is unavailable and the app falls back to on-device storage
-// automatically (see index.html) — this worker only makes the shell/icons load
-// instantly and lets the browser offer "Add to Home Screen".
-var CACHE = "iltizam-shell-v1";
+// سجل الالتزام — service worker
+// الصفحة نفسها: network-first حتى يوصلك أي تحديث فوراً.
+// باقي الملفات (أيقونات، مكتبة الخريطة): cache-first مع تحديث بالخلفية.
+var CACHE = "iltizam-v2";
 var SHELL = ["./", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", function(e){
@@ -23,14 +20,36 @@ self.addEventListener("activate", function(e){
   self.clients.claim();
 });
 
+function isDocument(req){
+  return req.mode === "navigate" || (req.headers.get("accept") || "").indexOf("text/html") !== -1;
+}
+
 self.addEventListener("fetch", function(e){
-  if (e.request.method !== "GET") return;
+  var req = e.request;
+  if (req.method !== "GET") return;
+
+  // بلاطات الخريطة تمر مباشرة بدون تخزين
+  if (req.url.indexOf("tile.openstreetmap.org") !== -1) return;
+
+  if (isDocument(req)){
+    e.respondWith(
+      fetch(req).then(function(res){
+        var copy = res.clone();
+        caches.open(CACHE).then(function(cache){ cache.put(req, copy); }).catch(function(){});
+        return res;
+      }).catch(function(){
+        return caches.match(req).then(function(hit){ return hit || caches.match("./"); });
+      })
+    );
+    return;
+  }
+
   e.respondWith(
-    caches.match(e.request).then(function(cached){
-      var network = fetch(e.request).then(function(res){
+    caches.match(req).then(function(cached){
+      var network = fetch(req).then(function(res){
         if (res && res.ok){
           var copy = res.clone();
-          caches.open(CACHE).then(function(cache){ cache.put(e.request, copy); }).catch(function(){});
+          caches.open(CACHE).then(function(cache){ cache.put(req, copy); }).catch(function(){});
         }
         return res;
       }).catch(function(){ return cached; });
