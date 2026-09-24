@@ -737,6 +737,16 @@
     </div>
 
     <div class="card">
+      <h2>🔔 التذكيرات</h2>
+      <div class="empty-note" style="text-align:right;padding:0 0 10px">التطبيق ما يكدر يدزّ إشعارات وهو مغلق، فنولّد لك ملف تذكيرات بأوقاتك أنت، تضيفه لتقويم هاتفك مرة وحدة وتوصلك الإشعارات يومياً.</div>
+      <div class="backup-row">
+        <button class="btn" id="icsBtn">📅 أضف التذكيرات لتقويمي</button>
+        <button class="btn ghost" id="icsShareBtn">📤 شارك الملف</button>
+      </div>
+      <div class="empty-note" id="icsNote" style="text-align:right;padding-top:8px"></div>
+    </div>
+
+    <div class="card">
       <h2>نسخة احتياطية</h2>
       <div class="empty-note" style="text-align:right;padding:0 0 10px">بياناتك محفوظة على هذا الجهاز فقط. صدّر نسخة بين فترة وأخرى حتى لا تضيع إذا بدّلت الهاتف أو حذفت التطبيق.</div>
       <div class="backup-row">
@@ -918,7 +928,7 @@
    "checklist","dayTypeLbl","milkAmount","coffeeGrid","kitchenBanner","freeRow",
    "mealSheet","mealSheetBg","mealSheetTitle","mealSheetList","mealSheetClose","mealSheetSkip",
    "weekGrid","weekStats","badgeRow","badgeNote","monthPrev","monthNext","monthLabel","calGrid","monthStats",
-   "weightChartWrap","weightStats","exportBtn","importBtn","importFile","backupNote",
+   "weightChartWrap","weightStats","exportBtn","importBtn","importFile","backupNote","icsBtn","icsShareBtn","icsNote",
    "walkKm","walkTime","walkKcal","walkPace","walkToggle","walkStatus","walkMap","walkStats","walkList","manualWalkBtn","recenterBtn",
    "recipeTabs","recipeList","judgeTypeRow","judgeInput","judgeBtn","judgeResult",
    "shotBtn","shotInput","shotPreviewWrap","shotPreview","shotAskBtn","shotSaveBtn","shotNote","shotGallery",
@@ -2721,6 +2731,110 @@
       ((profile && profile.goalWeight) || 80) + " كغم ووزني الحالي " +
       ((profile && profile.currentWeight) || "—") + " كغم). سؤالي: " + q;
     window.open("https://claude.ai/new?q=" + encodeURIComponent(ctx), "_blank");
+  });
+
+  /* ======================================================= reminders ==== */
+  var BYDAY = ["SU","MO","TU","WE","TH","FR","SA"];
+
+  function icsStamp(hhmm, offsetDays){
+    var d = new Date();
+    d.setDate(d.getDate() + (offsetDays||0));
+    var parts = (hhmm||"08:00").split(":");
+    d.setHours(parseInt(parts[0],10)||8, parseInt(parts[1],10)||0, 0, 0);
+    return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + "T" +
+           pad(d.getHours()) + pad(d.getMinutes()) + "00";
+  }
+
+  function icsEvent(uid, summary, desc, hhmm, byday, minutes){
+    if (!hhmm) return "";
+    var start = icsStamp(hhmm, 0);
+    var endD = new Date();
+    var p2 = hhmm.split(":");
+    endD.setHours(parseInt(p2[0],10), (parseInt(p2[1],10)||0) + (minutes||15), 0, 0);
+    var end = endD.getFullYear() + pad(endD.getMonth()+1) + pad(endD.getDate()) + "T" +
+              pad(endD.getHours()) + pad(endD.getMinutes()) + "00";
+    var rule = byday ? ("RRULE:FREQ=WEEKLY;BYDAY=" + byday) : "RRULE:FREQ=DAILY";
+    return [
+      "BEGIN:VEVENT",
+      "UID:" + uid + "-" + Date.now() + "@iltizam.app",
+      "DTSTAMP:" + icsStamp("08:00", 0) + "Z",
+      "DTSTART:" + start,
+      "DTEND:" + end,
+      rule,
+      "SUMMARY:" + summary,
+      "DESCRIPTION:" + (desc || ""),
+      "TRANSP:TRANSPARENT",
+      "BEGIN:VALARM", "TRIGGER:PT0M", "ACTION:DISPLAY", "DESCRIPTION:" + summary, "END:VALARM",
+      "END:VEVENT"
+    ].join("\r\n");
+  }
+
+  function mealNames(type){
+    var list = (settings.meals && settings.meals[type]) || [];
+    return list.slice(0,4).map(function(m){ return m.n; }).join(" / ") || "";
+  }
+
+  function buildICS(){
+    var work = (settings.workDays || []).slice().sort();
+    var holiday = [0,1,2,3,4,5,6].filter(function(d){ return work.indexOf(d) === -1; });
+    var wd = work.map(function(d){ return BYDAY[d]; }).join(",");
+    var hd = holiday.map(function(d){ return BYDAY[d]; }).join(",");
+    var tw = settings.times.work || {}, th = settings.times.holiday || {};
+    var ev = [];
+
+    if (wd){
+      ev.push(icsEvent("wb", "🍳 الإفطار — سجل الالتزام", mealNames("breakfast"), tw.breakfast, wd, 15));
+      ev.push(icsEvent("wl", "🍗 الغداء — سجل الالتزام", mealNames("lunch"), tw.lunch, wd, 30));
+      ev.push(icsEvent("wl2", "🥚 الوجبة الثانية — سجل الالتزام", mealNames("lunch2"), tw.lunch2, wd, 15));
+      ev.push(icsEvent("ws", "🍎 السناك — سجل الالتزام", mealNames("snack"), tw.snack, wd, 15));
+    }
+    if (hd){
+      ev.push(icsEvent("hb", "🍳 الإفطار (عطلة) — سجل الالتزام", mealNames("breakfast"), th.breakfast, hd, 15));
+      ev.push(icsEvent("hl", "🍗 الغداء (عطلة) — سجل الالتزام", mealNames("lunch"), th.lunch, hd, 30));
+      ev.push(icsEvent("hl2", "🥚 الوجبة الثانية (عطلة) — سجل الالتزام", mealNames("lunch2"), th.lunch2, hd, 15));
+      ev.push(icsEvent("hs", "🍎 السناك (عطلة) — سجل الالتزام", mealNames("snack"), th.snack, hd, 15));
+    }
+
+    var goal = settings.waterGoalCups || 8;
+    ev.push(icsEvent("w1", "💧 اشرب ماء — سجل الالتزام", "هدفك " + goal + " أكواب باليوم", "11:00", null, 10));
+    ev.push(icsEvent("w2", "💧 اشرب ماء — سجل الالتزام", "أكمل الأكواب الباقية", "17:00", null, 10));
+    ev.push(icsEvent("wk", "🚶 المشي " + (settings.walkMinutes||45) + " دقيقة — سجل الالتزام",
+                     "افتح تبويب المشي بالتطبيق وسجّل مسارك", "18:30", null, settings.walkMinutes||45));
+    ev.push(icsEvent("kc", "🔒 إقفال المطبخ — ممنوع الأكل بعد الآن",
+                     "إذا جاك جوع: خيار، خس، شوربة صافية، شاي أو قهوة بدون سكر", settings.kitchenClose || "20:30", null, 10));
+    ev.push(icsEvent("wi", "⚖️ قياس الوزن الأسبوعي — سجل الالتزام",
+                     "الوزن صباحاً على الريق، وسجّله بالتطبيق", "08:00", "FR", 10));
+
+    return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Sijil Al-Iltizam//AR","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+            "X-WR-CALNAME:تذكيرات سجل الالتزام"]
+           .concat(ev.filter(Boolean))
+           .concat(["END:VCALENDAR"]).join("\r\n");
+  }
+
+  function icsBlob(){ return new Blob([buildICS()], {type:"text/calendar;charset=utf-8"}); }
+
+  els.icsBtn.addEventListener("click", function(){
+    try {
+      var url = URL.createObjectURL(icsBlob());
+      var a = document.createElement("a");
+      a.href = url; a.download = "iltizam-reminders.ics";
+      document.body.appendChild(a); a.click();
+      setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 1500);
+      els.icsNote.textContent = "نزّل الملف — افتحه من الإشعارات واختار \"إضافة إلى التقويم\". التذكيرات تنضاف بأوقاتك الحالية.";
+      toast("تم توليد التذكيرات ✅");
+    } catch(e){ els.icsNote.textContent = "تعذّر التوليد على هذا المتصفح."; }
+  });
+
+  els.icsShareBtn.addEventListener("click", function(){
+    var file = new File([icsBlob()], "iltizam-reminders.ics", {type:"text/calendar"});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({ files:[file], title:"تذكيرات سجل الالتزام",
+        text:"تذكيرات وجبات وماء ومشي — افتح الملف وأضفه لتقويمك." })
+        .then(function(){ els.icsNote.textContent = "انبعث ✅"; }).catch(function(){});
+    } else {
+      els.icsBtn.click();
+      els.icsNote.textContent = "متصفحك ما يدعم المشاركة المباشرة — نزّلت الملف، ابعثه من المعرض أو الملفات.";
+    }
   });
 
   /* ======================================================= backup ======= */
